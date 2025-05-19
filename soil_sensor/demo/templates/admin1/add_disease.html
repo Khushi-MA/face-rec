@@ -1,0 +1,83 @@
+{% extends 'admin1/base.html' %}
+{% block content %}
+<style>
+  
+  /* Table Styles */
+  table {
+      width: 100%;
+      border-collapse: collapse;
+      background: white;
+      margin: 20px 0;
+  }
+  
+  th, td {
+      border: 1px solid #ddd;
+      padding: 10px;
+      text-align: center;
+  }
+  
+  th {
+      background: #2c3e50;
+      color: white;
+  }
+  
+  /* Button Styles */
+  button, .btn {
+      background: #27ae60;
+      color: white;
+      border: none;
+      padding: 10px 15px;
+      cursor: pointer;
+      text-decoration: none;
+      border-radius: 5px;
+  }
+  
+  button:hover, .btn:hover {
+      background: #219150;
+  }
+  
+  /* Form Styles */
+  form {
+      background: white;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+      max-width: 400px;
+      margin: auto;
+  }
+  
+  input, select {
+      width: 100%;
+      padding: 10px;
+      margin: 10px 0;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+  }
+  
+  label {
+      font-weight: bold;
+  }
+  
+  </style>
+    <title>Add Disease</title>
+
+    <h1>Add Disease for {{ crop.name }}</h1>
+    <form method="POST" enctype="multipart/form-data">
+        {% csrf_token %}
+        
+        <label>Name:</label>
+        <input type="text" name="name" required><br>
+    
+        <label>Description:</label>
+        <textarea name="description" required></textarea><br>
+    
+        <label>Control Methods:</label>
+        <textarea name="control_methods" required></textarea><br>
+    
+        <label>Image:</label>
+        <input type="file" name="image"><br>
+    
+        <button type="submit">Add Disease</button>
+    </form>
+    
+    {% endblock %}

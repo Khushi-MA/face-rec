@@ -1,0 +1,713 @@
+{% extends 'members/manager/base.html' %}
+{% load custom_filters %}
+
+{% block manager_content %}
+<div class="card">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <h5 class="card-title mb-0">Order Details #{{ order.id }}</h5>
+        <div class="btn-group">
+            {% if order.status == 'pending' %}
+                <button type="button" class="btn btn-primary me-2" data-bs-toggle="modal" data-bs-target="#paymentModal">
+                    <i class="fas fa-money-bill-wave me-1"></i> Pay Now
+                </button>
+                <form method="post" action="{% url 'process_order' order.id %}" class="d-inline">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-success me-2">Process Order</button>
+                </form>
+                <form method="post" action="{% url 'cancel_order' order.id %}" class="d-inline">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-danger">Cancel Order</button>
+                </form>
+            {% endif %}
+        </div>
+    </div>
+    <div class="card-body">
+        <div class="row mb-4">
+            <div class="col-md-6">
+                <h6 class="mb-3">Order Information</h6>
+                <table class="table table-borderless">
+                    <tr>
+                        <th style="width: 150px;">Order ID:</th>
+                        <td>#{{ order.id }}</td>
+                    </tr>
+                    <tr>
+                        <th>Customer Name:</th>
+                        <td>{{ order.customer_name }}</td>
+                    </tr>
+                    <tr>
+                        <th>Order Date:</th>
+                        <td>{{ order.order_date|date:"F j, Y, g:i a" }}</td>
+                    </tr>
+                    <tr>
+                        <th>Status:</th>
+                        <td>
+                            <span class="badge {% if order.status == 'completed' %}bg-success{% elif order.status == 'pending' %}bg-warning{% else %}bg-danger{% endif %}">
+                                {{ order.status|title }}
+                            </span>
+                        </td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+
+        <h6 class="mb-3">Order Items</h6>
+        <div class="table-responsive">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Item</th>
+                        <th>Price</th>
+                        <th>Quantity</th>
+                        <th>Subtotal</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in order_items %}
+                    <tr>
+                        <td>{{ item.product.product_name }}</td>
+                        <td>Rs{{ item.price_at_time_of_order }}</td>
+                        <td>{{ item.quantity }}</td>
+                        <td>Rs{{ item.price_at_time_of_order|floatformat:2|multiply:item.quantity }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+                <tfoot>
+                    <tr>
+                        <td colspan="3" class="text-end"><strong>Total:</strong></td>
+                        <td><strong>Rs{{ order.total_amount }}</strong></td>
+                    </tr>
+                </tfoot>
+            </table>
+        </div>
+
+        <div class="text-end mt-4">
+            <a href="{% url 'manage_orders' %}" class="btn btn-secondary">Back to Orders</a>
+        </div>
+    </div>
+</div>
+
+<!-- Enhanced Payment Modal -->
+<div class="modal fade" id="paymentModal" tabindex="-1" aria-labelledby="paymentModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title" id="paymentModalLabel">
+                    <i class="fas fa-credit-card me-2"></i>Payment Details
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form method="post" action="{% url 'process_payment' order.id %}" id="paymentForm">
+                {% csrf_token %}
+                <div class="modal-body">
+                    <!-- Amount Display with Animation -->
+                    <div class="amount-display text-center mb-4">
+                        <div class="amount-label">Amount to Pay</div>
+                        <div class="amount-value">Rs{{ order.total_amount|floatformat:2 }}</div>
+                    </div>
+
+                    <!-- Payment Method Selection -->
+                    <div class="payment-methods mb-4">
+                        <div class="row g-2">
+                            <div class="col-6">
+                                <div class="payment-method-card" data-method="upi">
+                                    <input type="radio" name="payment_method" value="upi" id="upiMethod" class="d-none">
+                                    <label for="upiMethod" class="payment-method-label">
+                                        <i class="fas fa-mobile-alt"></i>
+                                        <span>UPI</span>
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <div class="payment-method-card" data-method="card">
+                                    <input type="radio" name="payment_method" value="card" id="cardMethod" class="d-none">
+                                    <label for="cardMethod" class="payment-method-label">
+                                        <i class="fas fa-credit-card"></i>
+                                        <span>Card</span>
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <div class="payment-method-card" data-method="netbanking">
+                                    <input type="radio" name="payment_method" value="netbanking" id="netbankingMethod" class="d-none">
+                                    <label for="netbankingMethod" class="payment-method-label">
+                                        <i class="fas fa-university"></i>
+                                        <span>Net Banking</span>
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <div class="payment-method-card" data-method="cash">
+                                    <input type="radio" name="payment_method" value="cash" id="cashMethod" class="d-none">
+                                    <label for="cashMethod" class="payment-method-label">
+                                        <i class="fas fa-money-bill-alt"></i>
+                                        <span>Cash</span>
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Dynamic Payment Details -->
+                    <div id="paymentDetails" class="payment-details">
+                        <!-- UPI Section -->
+                        <div id="upiDetails" class="payment-section d-none">
+                            <div class="qr-code-section text-center mb-3">
+                                <div class="qr-code-container">
+                                    <div id="upiQrCode" class="upi-qr-code"></div>
+                                    <div class="qr-code-overlay">
+                                        <div class="qr-code-amount">Rs{{ order.total_amount|floatformat:2 }}</div>
+                                        <div class="qr-code-order">Order #{{ order.id }}</div>
+                                    </div>
+                                </div>
+                                <div class="mt-2">
+                                    <small class="text-muted">Scan QR code to pay</small>
+                                </div>
+                            </div>
+                            <div class="text-center">
+                                <div class="upi-id-display">
+                                    <span class="upi-text">UPI ID: {{ store_upi_id|default:"store@upi" }}</span>
+                                    <button type="button" class="btn btn-sm btn-outline-primary ms-2 copy-btn" data-upi-id="{{ store_upi_id|default:'store@upi' }}">
+                                        <i class="fas fa-copy"></i>
+                                    </button>
+                                </div>
+                                <div class="mt-3">
+                                    <button type="button" class="btn btn-outline-secondary btn-sm" id="refreshQrCode">
+                                        <i class="fas fa-sync-alt me-1"></i> Refresh QR Code
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Card Section -->
+                        <div id="cardDetails" class="payment-section d-none">
+                            <div class="card-input-wrapper">
+                                <div class="mb-3">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <label class="form-label">Card Number</label>
+                                        <button type="button" class="btn btn-outline-secondary btn-sm" id="generateCardDetailsBtn">
+                                            <i class="fas fa-magic me-1"></i> Generate Test Card
+                                        </button>
+                                    </div>
+                                    <input type="text" class="form-control card-number-input" placeholder="1234 5678 9012 3456" maxlength="19">
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <label class="form-label">Expiry Date</label>
+                                        <input type="text" class="form-control card-expiry-input" placeholder="MM/YY" maxlength="5">
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="form-label">CVV</label>
+                                        <input type="password" class="form-control card-cvv-input" placeholder="***" maxlength="3">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Net Banking Section -->
+                        <div id="netbankingDetails" class="payment-section d-none">
+                            <select class="form-select mb-3">
+                                <option value="">Select Bank</option>
+                                <option value="sbi">State Bank of India</option>
+                                <option value="hdfc">HDFC Bank</option>
+                                <option value="icici">ICICI Bank</option>
+                                <option value="axis">Axis Bank</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Transaction ID (hidden) -->
+                <input type="hidden" name="transaction_id" id="transactionId">
+
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="submit" class="btn btn-primary pay-button" disabled>
+                        <span class="button-text">Pay Now</span>
+                        <div class="payment-animation d-none">
+                            <div class="spinner-border spinner-border-sm text-light me-2" role="status"></div>
+                            Processing...
+                        </div>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Payment Success Modal -->
+<div class="modal fade" id="paymentSuccessModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-body text-center p-4">
+                <div class="payment-success-animation">
+                    <div class="checkmark-circle">
+                        <div class="checkmark"></div>
+                    </div>
+                </div>
+                <h3 class="mt-4">Payment Successful!</h3>
+                <p class="transaction-id mb-4"></p>
+                <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Payment Form -->
+{% if order.payment_status != 'paid' %}
+<div class="card mt-4">
+    <div class="card-header">
+        <h5 class="card-title mb-0">Process Payment</h5>
+    </div>
+    <div class="card-body">
+        <form action="{% url 'process_payment' order.id %}" method="POST">
+            {% csrf_token %}
+            <div class="mb-3">
+                <label for="payment_method" class="form-label">Payment Method</label>
+                <select class="form-select" id="payment_method" name="payment_method" required>
+                    <option value="">Select payment method</option>
+                    <option value="cash">Cash</option>
+                    <option value="card">Card</option>
+                    <option value="upi">UPI</option>
+                </select>
+            </div>
+            <input type="hidden" id="transaction_id" name="transaction_id">
+            <button type="submit" class="btn btn-primary" onclick="generateTransactionId()">Process Payment</button>
+        </form>
+    </div>
+</div>
+{% endif %}
+
+{% block extra_css %}
+<style>
+/* Payment Modal Styles */
+.amount-display {
+    background: linear-gradient(135deg, #00b09b, #96c93d);
+    color: white;
+    padding: 20px;
+    border-radius: 10px;
+    margin-bottom: 20px;
+}
+
+.amount-label {
+    font-size: 0.9rem;
+    opacity: 0.9;
+}
+
+.amount-value {
+    font-size: 2rem;
+    font-weight: bold;
+}
+
+.payment-method-card {
+    border: 2px solid #e0e0e0;
+    border-radius: 10px;
+    padding: 15px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.payment-method-card:hover {
+    border-color: #007bff;
+    transform: translateY(-2px);
+}
+
+.payment-method-card.selected {
+    border-color: #007bff;
+    background-color: #f8f9ff;
+}
+
+.payment-method-card i {
+    font-size: 24px;
+    margin-bottom: 5px;
+    color: #007bff;
+}
+
+.payment-method-label {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    cursor: pointer;
+}
+
+.qr-code-container {
+    background: white;
+    padding: 15px;
+    border-radius: 10px;
+    display: inline-block;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    position: relative;
+    overflow: hidden;
+}
+
+.upi-qr-code {
+    width: 200px;
+    height: 200px;
+    background: white;
+    margin: 0 auto;
+}
+
+.qr-code-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    background: rgba(255, 255, 255, 0.9);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.qr-code-container:hover .qr-code-overlay {
+    opacity: 1;
+}
+
+.qr-code-amount {
+    font-size: 1.2rem;
+    font-weight: bold;
+    color: var(--primary-color);
+    margin-bottom: 5px;
+}
+
+.qr-code-order {
+    font-size: 0.9rem;
+    color: var(--text-dark);
+}
+
+.upi-id-display {
+    background: #f8f9fa;
+    padding: 8px 15px;
+    border-radius: 20px;
+    display: inline-flex;
+    align-items: center;
+}
+
+/* Payment Animation */
+.payment-success-animation {
+    width: 100px;
+    height: 100px;
+    margin: 0 auto;
+}
+
+.checkmark-circle {
+    width: 100px;
+    height: 100px;
+    position: relative;
+    background: #4CAF50;
+    border-radius: 50%;
+    animation: scale-in 0.3s ease-out;
+}
+
+.checkmark {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%) rotate(45deg);
+    width: 40px;
+    height: 80px;
+    border-bottom: 8px solid white;
+    border-right: 8px solid white;
+    animation: checkmark 0.4s ease-in-out 0.3s forwards;
+    opacity: 0;
+}
+
+@keyframes scale-in {
+    0% { transform: scale(0); }
+    100% { transform: scale(1); }
+}
+
+@keyframes checkmark {
+    0% { opacity: 0; transform: translate(-50%, -50%) rotate(45deg) scale(0.5); }
+    100% { opacity: 1; transform: translate(-50%, -50%) rotate(45deg) scale(1); }
+}
+
+/* Card Input Styling */
+.card-input-wrapper input {
+    font-family: monospace;
+    letter-spacing: 0.1em;
+}
+
+.card-number-input {
+    background-image: url('data:image/svg+xml;utf8,<svg ... />');
+    background-repeat: no-repeat;
+    background-position: 98% center;
+    background-size: 25px;
+}
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function generateTransactionId() {
+    const timestamp = new Date().getTime();
+    const random = Math.floor(Math.random() * 1000000);
+    const transactionId = `TXN${timestamp}${random}`;
+    document.getElementById('transaction_id').value = transactionId;
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    // Parse the JSON data from the script tag
+    const orderData = JSON.parse(document.getElementById('orderData').textContent);
+
+    function generateUPIQRCode() {
+        try {
+            const upiId = document.querySelector('.upi-text').textContent.split(': ')[1];
+            const amount = orderData.total_amount; // Use safely parsed data
+            const orderId = orderData.id; // Use safely parsed data
+            
+            // Format the UPI URL with proper encoding
+            const upiUrl = `upi://pay?pa=${encodeURIComponent(upiId)}&pn=${encodeURIComponent('Store')}&am=${amount}&cu=INR&tn=${encodeURIComponent('Order #' + orderId)}`;
+            
+            // Clear previous QR code
+            const qrCodeContainer = document.getElementById('upiQrCode');
+            qrCodeContainer.innerHTML = '';
+            
+            // Generate new QR code with error handling
+            try {
+                new QRCode(qrCodeContainer, {
+                    text: upiUrl,
+                    width: 200,
+                    height: 200,
+                    colorDark: "#000000",
+                    colorLight: "#ffffff",
+                    correctLevel: QRCode.CorrectLevel.H
+                });
+            } catch (error) {
+                console.error('Error generating QR code:', error);
+                qrCodeContainer.innerHTML = '<div class="text-danger">Error generating QR code</div>';
+            }
+        } catch (error) {
+            console.error('Error in UPI QR code generation:', error);
+        }
+    }
+
+    // Initialize QR code when UPI payment method is selected
+    document.querySelectorAll('.payment-method-card').forEach(method => {
+        method.addEventListener('click', function() {
+            if (this.dataset.method === 'upi') {
+                generateUPIQRCode();
+            }
+        });
+    });
+
+    const paymentForm = document.getElementById('paymentForm');
+    const paymentMethods = document.querySelectorAll('.payment-method-card');
+    const payButton = document.querySelector('.pay-button');
+    const paymentDetails = document.getElementById('paymentDetails');
+    
+    // Payment Method Selection
+    paymentMethods.forEach(method => {
+        method.addEventListener('click', function() {
+            // Remove selected class from all methods
+            paymentMethods.forEach(m => m.classList.remove('selected'));
+            // Add selected class to clicked method
+            this.classList.add('selected');
+            
+            // Enable pay button
+            payButton.disabled = false;
+            
+            // Show relevant payment details
+            const methodType = this.dataset.method;
+            document.querySelectorAll('.payment-section').forEach(section => {
+                section.classList.add('d-none');
+            });
+            
+            const detailsSection = document.getElementById(`${methodType}Details`);
+            if (detailsSection) {
+                detailsSection.classList.remove('d-none');
+                
+                // Add animation
+                detailsSection.style.opacity = '0';
+                detailsSection.style.transform = 'translateY(20px)';
+                setTimeout(() => {
+                    detailsSection.style.transition = 'all 0.3s ease';
+                    detailsSection.style.opacity = '1';
+                    detailsSection.style.transform = 'translateY(0)';
+                }, 50);
+            }
+            
+            // Set transaction ID automatically
+            generateTransactionId();
+        });
+    });
+
+    // Handle Payment Submission
+    if (paymentForm) {
+        paymentForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            // Generate transaction ID if not already set
+            if (!document.getElementById('transactionId').value) {
+                generateTransactionId();
+            }
+            
+            // Show processing animation
+            const buttonText = payButton.querySelector('.button-text');
+            const paymentAnimation = payButton.querySelector('.payment-animation');
+            buttonText.classList.add('d-none');
+            paymentAnimation.classList.remove('d-none');
+            payButton.disabled = true;
+            
+            // Simulate payment processing
+            setTimeout(() => {
+                // Hide payment modal
+                const paymentModalElement = document.getElementById('paymentModal');
+                const paymentModal = bootstrap.Modal.getInstance(paymentModalElement);
+                if (paymentModal) {
+                    paymentModal.hide();
+                }
+                
+                // Show success modal
+                const successModalElement = document.getElementById('paymentSuccessModal');
+                const successModal = new bootstrap.Modal(successModalElement);
+                document.querySelector('#paymentSuccessModal .transaction-id').textContent = 
+                    `Transaction ID: ${document.getElementById('transactionId').value}`;
+                successModal.show();
+                
+                // Trigger confetti animation
+                const canvas = document.createElement('canvas');
+                canvas.style.position = 'fixed';
+                canvas.style.top = '0';
+                canvas.style.left = '0';
+                canvas.style.width = '100%';
+                canvas.style.height = '100%';
+                canvas.style.zIndex = '1056'; // Ensure it's above the modal backdrop
+                canvas.style.pointerEvents = 'none'; // Allow clicks through
+                document.body.appendChild(canvas);
+                
+                const myConfetti = confetti.create(canvas, { resize: true });
+                myConfetti({
+                    particleCount: 150,
+                    spread: 90,
+                    origin: { y: 0.6 },
+                    zIndex: 1057 // Ensure confetti is above the modal itself
+                });
+
+                // Remove canvas after animation
+                setTimeout(() => {
+                    if (canvas.parentNode) {
+                         canvas.parentNode.removeChild(canvas);
+                    }
+                }, 3000); // Remove after 3 seconds
+
+                // Submit the form after a short delay to show success
+                setTimeout(() => {
+                   // Check if the form still exists before submitting
+                   if (document.contains(this)) {
+                       this.submit();
+                   }
+                }, 1000);
+
+            }, 2000);
+        });
+    }
+
+    // Format Card Number
+    const cardNumberInput = document.querySelector('.card-number-input');
+    if (cardNumberInput) {
+        cardNumberInput.addEventListener('input', function(e) {
+            let value = e.target.value.replace(/\D/g, '');
+            value = value.replace(/(\d{4})/g, '$1 ').trim();
+            e.target.value = value;
+        });
+    }
+});
+
+// Refresh QR code button with loading state
+document.getElementById('refreshQrCode')?.addEventListener('click', function() {
+    const button = this;
+    const originalHTML = button.innerHTML;
+    
+    // Show loading state
+    button.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i> Refreshing...';
+    button.disabled = true;
+    
+    // Generate new QR code
+    generateUPIQRCode();
+    
+    // Reset button state after a short delay
+    setTimeout(() => {
+        button.innerHTML = originalHTML;
+        button.disabled = false;
+    }, 500);
+});
+
+// Copy UPI ID button with improved feedback
+document.querySelectorAll('.copy-btn').forEach(btn => {
+    btn.addEventListener('click', function() {
+        const upiId = this.dataset.upiId;
+        const originalHTML = this.innerHTML;
+        
+        navigator.clipboard.writeText(upiId).then(() => {
+            // Show success state
+            this.innerHTML = '<i class="fas fa-check"></i>';
+            this.classList.add('btn-success');
+            this.classList.remove('btn-outline-primary');
+            
+            // Reset button state after 2 seconds
+            setTimeout(() => {
+                this.innerHTML = originalHTML;
+                this.classList.remove('btn-success');
+                this.classList.add('btn-outline-primary');
+            }, 2000);
+        }).catch(err => {
+            console.error('Failed to copy UPI ID:', err);
+            this.innerHTML = '<i class="fas fa-times"></i>';
+            this.classList.add('btn-danger');
+            this.classList.remove('btn-outline-primary');
+            
+            // Reset button state after 2 seconds
+            setTimeout(() => {
+                this.innerHTML = originalHTML;
+                this.classList.remove('btn-danger');
+                this.classList.add('btn-outline-primary');
+            }, 2000);
+        });
+    });
+});
+
+// Card Details Generation
+function generateFakeCardDetails() {
+    const cardNumberInput = document.querySelector('.card-number-input');
+    const expiryInput = document.querySelector('.card-expiry-input');
+    const cvvInput = document.querySelector('.card-cvv-input');
+
+    // Generate fake card number (Visa format)
+    let cardNumber = '4';
+    for (let i = 0; i < 3; i++) {
+        cardNumber += Math.floor(1000 + Math.random() * 9000);
+    }
+    cardNumber = cardNumber.match(/.{1,4}/g).join(' ');
+
+    // Generate fake expiry date (within next 5 years)
+    const currentYear = new Date().getFullYear() % 100;
+    const expiryYear = currentYear + Math.floor(Math.random() * 5) + 1;
+    const expiryMonth = Math.floor(Math.random() * 12) + 1;
+    const expiryDate = `${String(expiryMonth).padStart(2, '0')}/${expiryYear}`;
+
+    // Generate fake CVV
+    const cvv = String(Math.floor(100 + Math.random() * 900)).padStart(3, '0');
+
+    // Populate fields
+    cardNumberInput.value = cardNumber;
+    expiryInput.value = expiryDate;
+    cvvInput.value = cvv;
+
+    // Trigger input events if needed for validation or formatting
+    cardNumberInput.dispatchEvent(new Event('input'));
+    expiryInput.dispatchEvent(new Event('input'));
+    cvvInput.dispatchEvent(new Event('input'));
+}
+
+// Add event listener to the generate button
+document.getElementById('generateCardDetailsBtn')?.addEventListener('click', function() {
+    generateFakeCardDetails();
+});
+</script>
+{% endblock %}
+
+{% endblock %}

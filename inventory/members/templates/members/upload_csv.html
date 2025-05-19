@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Upload CSV</title>
+    <!-- Include your CSS files here -->
+</head>
+<body>
+    <div class="upload-container">
+        <h2>Upload CSV File</h2>
+
+        <!-- Display success or error messages -->
+        {% if messages %}
+            <ul class="messages">
+                {% for message in messages %}
+                    <li class="{{ message.tags }}">{{ message }}</li>
+                {% endfor %}
+            </ul>
+        {% endif %}
+
+        <!-- Form for CSV file upload -->
+        <form method="POST" enctype="multipart/form-data">
+            {% csrf_token %}
+            
+            <label for="csv_file">Choose a CSV file to upload:</label>
+            <input type="file" id="csv_file" name="csv_file" accept=".csv" required>
+
+            <button type="submit">Upload</button>
+        </form>
+    </div>
+</body>
+</html>

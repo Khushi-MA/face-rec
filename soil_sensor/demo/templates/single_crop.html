@@ -1,0 +1,446 @@
+{% extends 'common_links.html' %}
+
+{% block content %}
+<style>
+
+    .container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 20px;
+    }
+
+    /* Banner Styles */
+    .banner {
+        display: flex;
+        align-items: center;
+        background: #ffffff;
+        padding: 20px;
+        border-radius: 12px;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        margin-bottom: 30px;
+        border-left: 5px solid #28a745;
+    }
+
+    .banner-image img {
+        width: 250px;
+        height: auto;
+        border-radius: 10px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    .banner-cards {
+        flex: 1;
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 15px;
+        margin-left: 20px;
+    }
+
+    .card {
+        background: #f9f9f9;
+        padding: 15px;
+        border-radius: 8px;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+        text-align: center;
+        transition: transform 0.3s ease;
+    }
+
+    .card:hover {
+        transform: translateY(-5px);
+    }
+
+    .card p {
+        margin: 5px 0;
+        font-size: 16px;
+        color: #333;
+    }
+
+    .card strong {
+        color: #2c3e50;
+    }
+
+    /* Navigation Styles */
+    .nav-bar {
+        position:inherit; /* Fix the nav-bar at the top */
+        top: 0; /* Align to the top of the viewport */
+        left: 0; /* Stretch across the full width */
+        width: 100%; /* Full width */
+        display: flex;
+        justify-content: space-around;
+        background: #2c3e50;
+        padding: 15px 0;
+        border-radius: 0; /* Remove border-radius since it's full-width */
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        z-index: 1000; /* Ensure it stays above other content */
+    }
+
+    .nav-bar a {
+        color: white;
+        text-decoration: none;
+        font-weight: bold;
+        padding: 12px 20px;
+        border-radius: 8px;
+        transition: background 0.3s ease;
+    }
+
+    .nav-bar a:hover {
+        background: #28a745;
+    }
+
+    /* Add padding to container to prevent content from hiding under fixed nav */
+    .container {
+        padding-top: 80px; /* Adjust based on nav-bar height */
+    }
+
+    /* Section Styles */
+    .section {
+        display: none;
+        background: #ffffff;
+        padding: 20px;
+        border-radius: 12px;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        border-left: 5px solid #28a745;
+        margin-bottom: 20px;
+        opacity: 0;
+        transition: opacity 0.5s ease;
+    }
+
+    .section.active {
+        display: block;
+        opacity: 1;
+    }
+
+    .section h2 {
+        color: #2c3e50;
+        font-size: 22px;
+        margin-bottom: 15px;
+        text-align: center;
+    }
+
+    .section-content {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 15px;
+    }
+
+    .section-card {
+        background: #f9f9f9;
+        padding: 15px;
+        border-radius: 8px;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+        transition: transform 0.3s ease;
+    }
+
+    .section-card:hover {
+        transform: translateY(-5px);
+    }
+
+    .section-card p {
+        margin: 5px 0;
+        font-size: 16px;
+        color: #555;
+    }
+
+    .section-card strong {
+        color: #2c3e50;
+    }
+
+    .highlight {
+        background: #e8f0fe;
+        padding: 15px;
+        border-radius: 8px;
+        margin-top: 15px;
+    }
+
+    .image-container {
+        display: flex;
+        justify-content: space-around;
+        flex-wrap: wrap;
+        gap: 15px;
+    }
+
+    .image-item {
+        text-align: center;
+        min-width: 120px;
+    }
+
+    .image-item img {
+        width: 60px;
+        height: 60px;
+        margin-bottom: 10px;
+    }
+
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 15px;
+        background: #fff;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+        border-radius: 8px;
+    }
+
+    th, td {
+        padding: 12px;
+        text-align: center;
+        border-bottom: 1px solid #ddd;
+    }
+
+    th {
+        background: #2c3e50;
+        color: white;
+        font-weight: bold;
+    }
+
+    td img {
+        width: 80px;
+        height: 80px;
+        border-radius: 5px;
+    }
+
+    @media (max-width: 768px) {
+        .banner {
+            flex-direction: column;
+            text-align: center;
+        }
+
+        .banner-cards {
+            grid-template-columns: 1fr;
+            margin-left: 0;
+            margin-top: 20px;
+        }
+
+        .nav-bar {
+            flex-direction: column;
+            align-items: center;
+            position: relative; /* Reset to relative for mobile */
+            width: auto; /* Reset width */
+            border-radius: 10px; /* Restore border-radius */
+        }
+
+        .nav-bar a {
+            margin: 5px 0;
+            width: 80%;
+            text-align: center;
+        }
+
+        .container {
+            padding-top: 20px; /* Reset padding-top for mobile */
+        }
+
+        .section-content {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+
+<div class="container">
+    <!-- Banner with Image and Basic Info in Cards -->
+    <div class="banner">
+        <div class="banner-image">
+            {% if crop.image %}
+                <img src="{{ crop.image.url }}" alt="{{ crop.name }}">
+            {% else %}
+                <p>No Image Available</p>
+            {% endif %}
+        </div>
+        <div class="banner-cards">
+            <div class="card">
+                <p><strong>Name:</strong> {{ crop.name }}</p>
+            </div>
+            <div class="card">
+                <p><strong>Scientific Name:</strong> {{ crop.scientific_name }}</p>
+            </div>
+            <div class="card">
+                <p><strong>Type:</strong> {{ crop.crop_type }}</p>
+            </div>
+            <div class="card">
+                <p><strong>Season:</strong> {{ crop.season }}</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Navigation Bar -->
+    <div class="nav-bar">
+        <a href="#" onclick="showSection('soil-land')">🌍 Soil & Land Preparation</a>
+        <a href="#" onclick="showSection('climate-temp')">🌦 Climate & Temperature</a>
+        <a href="#" onclick="showSection('sowing-harvest')">🌾 Sowing & Harvesting</a>
+        <a href="#" onclick="showSection('diseases')">🦠 Common Diseases</a>
+        <a href="#" onclick="showSection('pest')">🐛 Pest</a>
+        <a href="#" onclick="showSection('fertilizer')">🧪 Fertilizer Requirements</a>
+    </div>
+
+    <!-- Sections -->
+    <div id="soil-land" class="section">
+        <h2>🌍 Soil & Land Preparation</h2>
+        <div class="section-content">
+            <div class="section-card">
+                <p><strong>Soil Type:</strong> {{ crop.soil }}</p>
+            </div>
+            <div class="section-card">
+                <p><strong>Land Preparation:</strong> {{ crop.land_preparation }}</p>
+            </div>
+        </div>
+    </div>
+
+    <div id="climate-temp" class="section">
+        <h2>🌦 Climate & Temperature</h2>
+        <div class="section-content">
+            <div class="highlight">
+                <div class="image-container">
+                    <div class="image-item">
+                        <img src="\static\images\icons\temperature.png" alt="Temperature">
+                        <p><strong>Temperature:</strong> {{ crop.temperature }} °C</p>
+                    </div>
+                    <div class="image-item">
+                        <img src="\static\images\icons\rain.png" alt="Rainfall">
+                        <p><strong>Rainfall:</strong> {{ crop.rainfall }} mm</p>
+                    </div>
+                    <div class="image-item">
+                        <img src="\static\images\icons\Sowing Temperature.png" alt="Sowing">
+                        <p><strong>Sowing Temp:</strong> {{ crop.sowing_temperature }} °C</p>
+                    </div>
+                    <div class="image-item">
+                        <img src="\static\images\icons\harvest.png" alt="Harvesting">
+                        <p><strong>Harvest Temp:</strong> {{ crop.harvesting_temperature }} °C</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="sowing-harvest" class="section">
+        <h2>🌾 Sowing & Harvesting</h2>
+        <div class="section-content">
+            <div class="section-card">
+                <p><strong>Time of Sowing:</strong> {{ crop.time_of_sowing }}</p>
+            </div>
+            <div class="section-card">
+                <p><strong>Spacing:</strong> {{ crop.spacing }}</p>
+            </div>
+            <div class="section-card">
+                <p><strong>Method of Sowing:</strong> {{ crop.method_of_sowing }}</p>
+            </div>
+            <div class="section-card">
+                <p><strong>Sowing Depth:</strong> {{ crop.sowing_depth }}</p>
+            </div>
+            <div class="section-card">
+                <p><strong>Harvesting Time:</strong> {{ crop.harvesting_time }}</p>
+            </div>
+            <div class="section-card">
+                <p><strong>Yield per Hectare:</strong> {{ crop.yield_per_hectare }}</p>
+            </div>
+            <div class="section-card">
+                <p><strong>Post Harvest Handling:</strong> {{ crop.post_harvest_handling }}</p>
+            </div>
+        </div>
+    </div>
+
+    <div id="diseases" class="section">
+        <h2>🦠 Common Diseases</h2>
+        <div class="section-content">
+            {% if crop.diseases.all %}
+                <table>
+                    <tr>
+                        <th>Image</th>
+                        <th>Name</th>
+                        <th>Description</th>
+                        <th>Control Methods</th>
+                    </tr>
+                    {% for disease in crop.diseases.all %}
+                    <tr>
+                        <td>
+                            {% if disease.image %}
+                                <img src="{{ disease.image.url }}" alt="{{ disease.name }}">
+                            {% else %}
+                                <p>No Image</p>
+                            {% endif %}
+                        </td>
+                        <td>{{ disease.name }}</td>
+                        <td>{{ disease.description }}</td>
+                        <td>{{ disease.control_methods }}</td>
+                    </tr>
+                    {% endfor %}
+                </table>
+            {% else %}
+                <div class="section-card">
+                    <p>No diseases found for this crop.</p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+    <div id="pest" class="section">
+        <h2>🐛 Pest</h2>
+        <div class="section-content">
+            {% if crop.pests.all %}
+                <table>
+                    <tr>
+                        <th>Image</th>
+                        <th>Name</th>
+                        <th>Description</th>
+                        <th>Control Methods</th>
+                    </tr>
+                    {% for pest in crop.pests.all %}
+                    <tr>
+                        <td>
+                            {% if pest.image %}
+                                <img src="{{ pest.image.url }}" alt="{{ pest.name }}">
+                            {% else %}
+                                <p>No Image</p>
+                            {% endif %}
+                        </td>
+                        <td>{{ pest.name }}</td>
+                        <td>{{ pest.description }}</td>
+                        <td>{{ pest.control_methods }}</td>
+                    </tr>
+                    {% endfor %}
+                </table>
+            {% else %}
+                <div class="section-card">
+                    <p>No pest found for this crop.</p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+    <div id="fertilizer" class="section">
+        <h2>🧪 Fertilizer Requirements</h2>
+        <div class="section-content">
+            {% if crop.fertilizer_requirements.all %}
+                <table>
+                    <tr>
+                        <th>Fertilizer Name</th>
+                        <th>Required Amount (kg/acre)</th>
+                    </tr>
+                    {% for fertilizer in crop.fertilizer_requirements.all %}
+                    <tr>
+                        <td>{{ fertilizer.name }}</td>
+                        <td>{{ fertilizer.value }}</td>
+                    </tr>
+                    {% endfor %}
+                </table>
+            {% else %}
+                <div class="section-card">
+                    <p>No fertilizer data available for this crop.</p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<script>
+    function showSection(sectionId) {
+        // Hide all sections
+        document.querySelectorAll('.section').forEach(section => {
+            section.classList.remove('active');
+        });
+        // Show the selected section
+        const selectedSection = document.getElementById(sectionId);
+        selectedSection.classList.add('active');
+    }
+
+    // Show the first section by default
+    document.addEventListener('DOMContentLoaded', () => {
+        showSection('soil-land');
+    });
+</script>
+
+{% endblock %}

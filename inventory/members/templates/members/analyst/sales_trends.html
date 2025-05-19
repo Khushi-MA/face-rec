@@ -1,0 +1,253 @@
+{% extends 'members/analyst/base.html' %}
+
+{% block extra_css %}
+<style>
+    .chart-container {
+        background-color: white;
+        padding: 20px;
+        border-radius: 8px;
+        box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        margin-bottom: 20px;
+        height: 400px;
+    }
+    .summary-card {
+        background-color: white;
+        padding: 15px;
+        border-radius: 8px;
+        box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        margin-bottom: 15px;
+    }
+    .summary-card h3 {
+        font-size: 1.5rem;
+        margin-bottom: 5px;
+        color: #333;
+    }
+    .summary-card p {
+        margin-bottom: 0;
+        color: #666;
+    }
+    .growth-indicator {
+        font-size: 0.875rem;
+        padding: 2px 8px;
+        border-radius: 12px;
+        margin-left: 8px;
+    }
+    .growth-positive {
+        background-color: #d4edda;
+        color: #155724;
+    }
+    .growth-negative {
+        background-color: #f8d7da;
+        color: #721c24;
+    }
+</style>
+{% endblock %}
+
+{% block analyst_content %}
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1>Sales Analysis</h1>
+        <div class="d-flex gap-2">
+            <select class="form-select" id="timeRange" onchange="updateTimeRange(this.value)">
+                <option value="7" {% if selected_days == 7 %}selected{% endif %}>Last 7 Days</option>
+                <option value="30" {% if selected_days == 30 %}selected{% endif %}>Last 30 Days</option>
+                <option value="90" {% if selected_days == 90 %}selected{% endif %}>Last 90 Days</option>
+                <option value="180" {% if selected_days == 180 %}selected{% endif %}>Last 6 Months</option>
+            </select>
+            <button class="btn btn-outline-primary" onclick="exportData()">Export Data</button>
+        </div>
+    </div>
+
+    <!-- Summary Cards -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="summary-card">
+                <h3>${{ summary.total_revenue|floatformat:2 }}</h3>
+                <p>Total Revenue
+                    <span class="growth-indicator {% if summary.revenue_growth >= 0 %}growth-positive{% else %}growth-negative{% endif %}">
+                        {{ summary.revenue_growth|floatformat:1 }}%
+                    </span>
+                </p>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="summary-card">
+                <h3>{{ summary.total_quantity|floatformat:0 }}</h3>
+                <p>Total Units Sold
+                    <span class="growth-indicator {% if summary.quantity_growth >= 0 %}growth-positive{% else %}growth-negative{% endif %}">
+                        {{ summary.quantity_growth|floatformat:1 }}%
+                    </span>
+                </p>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="summary-card">
+                <h3>${{ summary.avg_daily_revenue|floatformat:2 }}</h3>
+                <p>Average Daily Revenue</p>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="summary-card">
+                <h3>{{ summary.avg_daily_quantity|floatformat:0 }}</h3>
+                <p>Average Daily Units</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Charts -->
+    <div class="row">
+        <div class="col-md-8">
+            <div class="chart-container">
+                <h5>Sales Trend</h5>
+                <canvas id="salesTrendChart"></canvas>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="chart-container">
+                <h5>Sales Distribution by Category</h5>
+                <canvas id="categoryChart"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const salesTrendData = {{ sales_trend_data|safe }};
+    const categoryData = {{ category_data|safe }};
+
+    // Initialize Sales Trend Chart
+    const trendCtx = document.getElementById('salesTrendChart').getContext('2d');
+    new Chart(trendCtx, {
+        type: 'line',
+        data: {
+            labels: salesTrendData.dates,
+            datasets: [
+                {
+                    label: 'Revenue ($)',
+                    data: salesTrendData.revenues,
+                    borderColor: 'rgb(75, 192, 192)',
+                    backgroundColor: 'rgba(75, 192, 192, 0.1)',
+                    yAxisID: 'y',
+                    fill: true
+                },
+                {
+                    label: 'Units Sold',
+                    data: salesTrendData.quantities,
+                    borderColor: 'rgb(54, 162, 235)',
+                    backgroundColor: 'rgba(54, 162, 235, 0.1)',
+                    yAxisID: 'y1',
+                    fill: true
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            interaction: {
+                mode: 'index',
+                intersect: false,
+            },
+            scales: {
+                y: {
+                    type: 'linear',
+                    display: true,
+                    position: 'left',
+                    title: {
+                        display: true,
+                        text: 'Revenue ($)'
+                    }
+                },
+                y1: {
+                    type: 'linear',
+                    display: true,
+                    position: 'right',
+                    title: {
+                        display: true,
+                        text: 'Units Sold'
+                    },
+                    grid: {
+                        drawOnChartArea: false
+                    }
+                }
+            }
+        }
+    });
+
+    // Initialize Category Chart
+    const categoryCtx = document.getElementById('categoryChart').getContext('2d');
+    new Chart(categoryCtx, {
+        type: 'doughnut',
+        data: {
+            labels: categoryData.categories,
+            datasets: [{
+                data: categoryData.revenues,
+                backgroundColor: [
+                    'rgba(75, 192, 192, 0.8)',
+                    'rgba(54, 162, 235, 0.8)',
+                    'rgba(255, 206, 86, 0.8)',
+                    'rgba(255, 99, 132, 0.8)',
+                    'rgba(153, 102, 255, 0.8)'
+                ],
+                borderColor: [
+                    'rgba(75, 192, 192, 1)',
+                    'rgba(54, 162, 235, 1)',
+                    'rgba(255, 206, 86, 1)',
+                    'rgba(255, 99, 132, 1)',
+                    'rgba(153, 102, 255, 1)'
+                ],
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'bottom'
+                },
+                title: {
+                    display: true,
+                    text: 'Revenue by Category'
+                }
+            }
+        }
+    });
+});
+
+function updateTimeRange(days) {
+    window.location.href = `?days=${days}`;
+}
+
+function exportData() {
+    const salesTrendData = {{ sales_trend_data|safe }};
+    const categoryData = {{ category_data|safe }};
+    
+    // Combine data for CSV
+    let csvContent = "data:text/csv;charset=utf-8,";
+    
+    // Add sales trend data
+    csvContent += "Date,Revenue,Units Sold\n";
+    salesTrendData.dates.forEach((date, i) => {
+        csvContent += `${date},${salesTrendData.revenues[i]},${salesTrendData.quantities[i]}\n`;
+    });
+    
+    // Add category data
+    csvContent += "\nCategory,Revenue,Units\n";
+    categoryData.categories.forEach((category, i) => {
+        csvContent += `${category},${categoryData.revenues[i]},${categoryData.quantities[i]}\n`;
+    });
+    
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement("a");
+    link.setAttribute("href", encodedUri);
+    link.setAttribute("download", "sales_analysis.csv");
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+}
+</script>
+{% endblock %} 

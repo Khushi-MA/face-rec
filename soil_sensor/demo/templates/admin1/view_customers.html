@@ -1,0 +1,184 @@
+{% extends 'admin1/base.html' %}
+{% block content %}
+<div class="container mt-5">
+  <h2 class="text-center mb-4">Customer List</h2>
+
+  <div class="custom-card p-4 mb-5 shadow-sm">
+    <table class="table table-hover table-bordered custom-table">
+      <thead>
+        <tr>
+          <th>User ID</th>
+          <th>User Name</th>
+          <th>Gmail</th>
+          <th>Contact No</th>
+          <th>Devices</th>
+          <th>Manage Devices Info</th>
+          <th>Place</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for customer in customers %}
+        <tr class="fade-in">
+          <td>{{ customer.id }}</td>
+          <td>{{ customer.full_name }}</td>
+          <td>{{ customer.username }}</td>
+          <td>{{ customer.contact_no }}</td>
+          <td>
+            {% if customer.devices.all %}
+              <ul>
+                {% for device in customer.devices.all %}
+                  <li>{{ device.device_name }}</li>
+                {% endfor %}
+              </ul>
+            {% else %}
+              <span class="text-muted fst-italic">No devices</span>
+            {% endif %}
+          </td>
+          <td>
+            <a href="{% url 'manage_devices' customer.id %}" class="btn btn-manage">Manage</a>
+          </td>
+          <td>{{ customer.place }}</td>
+          <td>
+            <form method="post" action="/delete_user/{{customer.id}}" onsubmit="return confirmDeletion();" class="d-inline">
+              {% csrf_token %}
+              <button type="submit" class="btn btn-delete">🗑️</button>
+            </form>
+            <a href="{% url 'update_customer' customer.id %}" class="btn btn-edit">✏️</a>
+          </td>
+        </tr>
+        {% empty %}
+        <tr class="fade-in">
+          <td colspan="8" class="text-center text-muted">No customers found.</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<script>
+function confirmDeletion() {
+  return confirm("Are you sure you want to delete this user?");
+}
+</script>
+
+<style>
+  body {
+    background: #f4f7fa;
+    font-family: 'Segoe UI', sans-serif;
+  }
+
+  h2 {
+    font-weight: bold;
+    color: #333;
+    position: relative;
+  }
+
+  h2::after {
+    content: '';
+    display: block;
+    width: 70px;
+    height: 3px;
+    background: #26c6da;
+    margin: 12px auto 0;
+    border-radius: 2px;
+  }
+
+  .custom-card {
+    background: #fff;
+    border-radius: 15px;
+    overflow: hidden;
+    border: 1px solid #e0e0e0;
+  }
+
+  .custom-table thead {
+    background: linear-gradient(to right, #26c6da, #00acc1);
+    color: #fff;
+  }
+
+  .custom-table th, .custom-table td {
+    vertical-align: middle;
+    text-align: center;
+  }
+
+  .custom-table tbody tr {
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+  }
+
+  .custom-table tbody tr:hover {
+    background: #e3f7fb;
+    transform: scale(1.01);
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+  }
+
+  .custom-table ul {
+    padding-left: 0;
+    list-style: none;
+    margin: 0;
+  }
+
+  .custom-table ul li {
+    display: inline-block;
+    background: #b2ebf2;
+    color: #00796b;
+    padding: 5px 10px;
+    border-radius: 20px;
+    margin: 3px;
+    font-size: 0.85rem;
+  }
+
+  .btn-manage {
+    background: #ffca28;
+    color: #212121;
+    border: none;
+    padding: 5px 12px;
+    border-radius: 30px;
+    font-size: 0.8rem;
+  }
+
+  .btn-manage:hover {
+    background: #ffc107;
+  }
+
+  .btn-edit {
+    background: #42a5f5;
+    color: #fff;
+    border: none;
+    padding: 5px 10px;
+    border-radius: 30px;
+    font-size: 0.8rem;
+    margin-left: 4px;
+  }
+
+  .btn-edit:hover {
+    background: #1e88e5;
+  }
+
+  .btn-delete {
+    background: #ef5350;
+    color: #fff;
+    border: none;
+    padding: 5px 10px;
+    border-radius: 30px;
+    font-size: 0.8rem;
+  }
+
+  .btn-delete:hover {
+    background: #e53935;
+  }
+
+  /* Fade-in animation */
+  .fade-in {
+    animation: fadeIn 0.6s ease forwards;
+    opacity: 0;
+  }
+
+  @keyframes fadeIn {
+    to {
+      opacity: 1;
+    }
+  }
+</style>
+
+{% endblock %}

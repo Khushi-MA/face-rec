@@ -1,0 +1,13 @@
+{% extends 'base.html' %}
+
+{% block title %}View Report{% endblock %}
+
+{% block content %}
+<h2>View Report: {{ report.file_path.name }}</h2>
+
+<div style="margin: 20px auto; width: 80%; text-align: left; border: 1px solid #ddd; padding: 20px; background-color: #f9f9f9;">
+    {{ html_content|safe }}
+</div>
+
+<a href="{% url 'user_dashboard' %}" class="btn btn-secondary">Back to Dashboard</a>
+{% endblock %}

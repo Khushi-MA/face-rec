@@ -1,0 +1,136 @@
+{% extends 'admin/base.html' %}
+{% block content %}
+
+<h2>Soil Health Diagnosis</h2>
+<p><strong>Diagnosis:</strong> {{ diagnosis }}</p>
+
+<h2>Temperature Forecast</h2>
+<canvas id="tempChart" height="100"></canvas>
+
+<h2>Moisture Forecast</h2>
+<canvas id="moistureChart" height="100"></canvas>
+
+<!-- Include Chart.js from CDN -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<!-- Chart.js CDN -->
+<script>
+    const tempData = JSON.parse('{{ temp_data|escapejs }}');
+    const moistureData = JSON.parse('{{ moisture_data|escapejs }}');
+
+    const forecastStart = tempData.actual.length;
+
+    function extendWithNulls(actualLen, forecastArray) {
+        return Array(actualLen).fill(null).concat(forecastArray);
+    }
+
+    // Temperature Chart
+    new Chart(document.getElementById('tempChart'), {
+        type: 'line',
+        data: {
+            labels: tempData.labels,
+            datasets: [
+                {
+                    label: 'Actual Temperature (°C)',
+                    data: tempData.actual,
+                    borderColor: 'red',
+                    fill: false
+                },
+                {
+                    label: 'Forecast Temperature (°C)',
+                    data: extendWithNulls(tempData.actual.length, tempData.forecast),
+                    borderColor: 'orange',
+                    borderDash: [5, 5],
+                    fill: false
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            scales: { x: { display: true }, y: { display: true } }
+        }
+    });
+
+    // Moisture Chart
+    new Chart(document.getElementById('moistureChart'), {
+        type: 'line',
+        data: {
+            labels: moistureData.labels,
+            datasets: [
+                {
+                    label: 'Actual Moisture (%)',
+                    data: moistureData.actual,
+                    borderColor: 'blue',
+                    fill: false
+                },
+                {
+                    label: 'Forecast Moisture (%)',
+                    data: extendWithNulls(moistureData.actual.length, moistureData.forecast),
+                    borderColor: 'lightblue',
+                    borderDash: [5, 5],
+                    fill: false
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            scales: { x: { display: true }, y: { display: true } }
+        }
+    });
+</script>
+
+
+{% endblock %}
+
+
+{% comment %} {% extends 'admin/base.html' %}
+
+{% block content %}
+<div class="card">
+    <h1>Soil Health Prediction</h1>
+
+    <div style="text-align:center; margin-bottom: 20px;">
+        <input type="number" id="deviceId" placeholder="Enter Device ID">
+        <button onclick="fetchPrediction()">Predict</button>
+    </div>
+
+    <div id="result"></div>
+</div>
+
+<script>
+function fetchPrediction() {
+    const deviceId = document.getElementById('deviceId').value;
+    if (!deviceId) {
+        alert("Please enter a Device ID.");
+        return;
+    }
+
+    fetch(`/predict-soil-health/${deviceId}/`)
+    .then(response => {
+        if (!response.ok) {
+            throw new Error("No sensor data found or invalid Device ID.");
+        }
+        return response.json();
+    })
+    .then(data => {
+        const resultDiv = document.getElementById('result');
+        resultDiv.innerHTML = `
+            <p><span class="label">Device Name:</span> ${data.device_name}</p>
+            <p><span class="label">Timestamp:</span> ${data.timestamp}</p>
+            <p><span class="label">Temperature:</span> ${data.temperature}°C</p>
+            <p><span class="label">Moisture:</span> ${data.moisture}%</p>
+            <p><span class="label">pH:</span> ${data.pH}</p>
+            <p><span class="label">Overall Moisture:</span> ${data.overall_moisture}%</p>
+            <p><span class="label">Status:</span> ${data.status}</p>
+            <div class="prediction">Soil Health: <strong>${data.predicted_soil_health}</strong></div>
+        `;
+    })
+    .catch(error => {
+        document.getElementById('result').innerHTML = `<div class="error">${error.message}</div>`;
+    });
+}
+</script>
+{% endblock %}
+ {% endcomment %}
+
+

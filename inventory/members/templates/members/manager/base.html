@@ -1,0 +1,28 @@
+{% extends 'members/base.html' %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-3">
+            <div class="card">
+                <div class="card-header bg-success text-white">
+                    Manager Menu
+                </div>
+                <div class="list-group list-group-flush">
+                    <a href="{% url 'view_inventory' %}" class="list-group-item list-group-item-action">View Inventory</a>
+                    <a href="{% url 'add_item' %}" class="list-group-item list-group-item-action">Add New Items</a>
+                    <a href="{% url 'manage_orders' %}" class="list-group-item list-group-item-action">Manage Orders</a>
+                    <a href="{% url 'order_history' %}" class="list-group-item list-group-item-action">Order History</a>
+                    <a href="{% url 'stock_reports' %}" class="list-group-item list-group-item-action">Stock Reports</a>
+                    <a href="{% url 'sales_reports' %}" class="list-group-item list-group-item-action">Sales Reports</a>
+                    <a href="{% url 'dashboard' %}" class="list-group-item list-group-item-action">Back to Dashboard</a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-9">
+            {% block manager_content %}
+            {% endblock %}
+        </div>
+    </div>
+</div>
+{% endblock %} 

@@ -1,0 +1,329 @@
+{% extends 'members/base_landing.html' %}
+{% load static %}
+
+{% block content %}
+<style>
+    :root {
+        --primary-color: #4a90e2;
+        --secondary-color: #2c3e50;
+        --text-dark: #2c3e50;
+        --text-light: #ffffff;
+        --card-bg: #ffffff;
+        --border-color: #e0e0e0;
+        --success-color: #00C851;
+        --warning-color: #ffbb33;
+        --danger-color: #ff4444;
+    }
+
+    body {
+        background: #f5f7fa;
+        color: var(--text-dark);
+        font-family: 'Poppins', sans-serif;
+        min-height: 100vh;
+    }
+
+    .logs-container {
+        padding: 2rem;
+    }
+
+    .logs-title {
+        font-size: 2.5rem;
+        font-weight: 700;
+        margin-bottom: 2rem;
+        color: var(--secondary-color);
+    }
+
+    .filters-card {
+        background: var(--card-bg);
+        border: 1px solid var(--border-color);
+        border-radius: 15px;
+        padding: 1.5rem;
+        margin-bottom: 2rem;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+        transition: all 0.3s ease;
+    }
+
+    .filters-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 15px rgba(0, 0, 0, 0.1);
+    }
+
+    .section-title {
+        font-size: 1.5rem;
+        font-weight: 600;
+        color: var(--primary-color);
+        margin-bottom: 1.5rem;
+        padding-bottom: 0.5rem;
+        border-bottom: 1px solid var(--border-color);
+    }
+
+    .form-label {
+        color: var(--text-dark);
+        opacity: 0.8;
+        margin-bottom: 0.5rem;
+    }
+
+    .form-control, .form-select {
+        background: #ffffff;
+        border: 1px solid var(--border-color);
+        color: var(--text-dark);
+        padding: 0.75rem 1rem;
+        border-radius: 8px;
+        transition: all 0.3s ease;
+    }
+
+    .form-control:focus, .form-select:focus {
+        border-color: var(--primary-color);
+        box-shadow: 0 0 0 0.2rem rgba(74, 144, 226, 0.25);
+        color: var(--text-dark);
+    }
+
+    .logs-table {
+        background: var(--card-bg);
+        border: 1px solid var(--border-color);
+        border-radius: 15px;
+        overflow: hidden;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+    }
+
+    .logs-table th {
+        background: #f8f9fa;
+        color: var(--primary-color);
+        border-bottom: 1px solid var(--border-color);
+        padding: 1rem;
+    }
+
+    .logs-table td {
+        color: var(--text-dark);
+        border-bottom: 1px solid var(--border-color);
+        padding: 1rem;
+    }
+
+    .logs-table tr:hover {
+        background: #f8f9fa;
+    }
+
+    .status-badge {
+        padding: 0.5rem 1rem;
+        border-radius: 20px;
+        font-size: 0.875rem;
+        font-weight: 500;
+    }
+
+    .status-success {
+        background: rgba(0, 200, 81, 0.1);
+        color: var(--success-color);
+        border: 1px solid var(--success-color);
+    }
+
+    .status-warning {
+        background: rgba(255, 187, 51, 0.1);
+        color: var(--warning-color);
+        border: 1px solid var(--warning-color);
+    }
+
+    .status-danger {
+        background: rgba(255, 68, 68, 0.1);
+        color: var(--danger-color);
+        border: 1px solid var(--danger-color);
+    }
+
+    .pagination {
+        margin-top: 2rem;
+        display: flex;
+        justify-content: center;
+        gap: 0.5rem;
+    }
+
+    .page-link {
+        background: #ffffff;
+        border: 1px solid var(--border-color);
+        color: var(--text-dark);
+        padding: 0.5rem 1rem;
+        border-radius: 8px;
+        transition: all 0.3s ease;
+    }
+
+    .page-link:hover {
+        background: var(--primary-color);
+        border-color: var(--primary-color);
+        color: var(--text-light);
+    }
+
+    .page-item.active .page-link {
+        background: var(--primary-color);
+        border-color: var(--primary-color);
+        color: var(--text-light);
+    }
+
+    .page-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 2rem;
+    }
+
+    .header-actions {
+        display: flex;
+        gap: 1rem;
+    }
+
+    .action-button {
+        background: var(--primary-color);
+        border: none;
+        color: var(--text-light);
+        padding: 0.75rem 1.5rem;
+        font-size: 1rem;
+        border-radius: 8px;
+        transition: all 0.3s ease;
+        cursor: pointer;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .action-button:hover {
+        background: #357abd;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(74, 144, 226, 0.2);
+        color: var(--text-light);
+    }
+
+    .action-button.back {
+        background: var(--secondary-color);
+    }
+
+    .action-button.back:hover {
+        background: #1a252f;
+    }
+</style>
+
+<div class="logs-container">
+    <div class="page-header">
+        <h1 class="logs-title">User Activity Logs</h1>
+        <div class="header-actions">
+            <a href="{% url 'admin_dashboard' %}" class="action-button back">
+                <i class="fas fa-arrow-left"></i> Back to Dashboard
+            </a>
+        </div>
+    </div>
+
+    <!-- Filters Section -->
+    <div class="filters-card">
+        <h3 class="section-title">Filter Logs</h3>
+        <form method="get" class="row g-3">
+            <div class="col-md-4">
+                <label for="user" class="form-label">User</label>
+                <select class="form-select" id="user" name="user">
+                    <option value="">All Users</option>
+                    {% for user in users %}
+                    <option value="{{ user.id }}">{{ user.username }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-4">
+                <label for="action" class="form-label">Action</label>
+                <select class="form-select" id="action" name="action">
+                    <option value="">All Actions</option>
+                    <option value="login">Login</option>
+                    <option value="logout">Logout</option>
+                    <option value="create">Create</option>
+                    <option value="update">Update</option>
+                    <option value="delete">Delete</option>
+                </select>
+            </div>
+            <div class="col-md-4">
+                <label for="status" class="form-label">Status</label>
+                <select class="form-select" id="status" name="status">
+                    <option value="">All Statuses</option>
+                    <option value="success">Success</option>
+                    <option value="warning">Warning</option>
+                    <option value="error">Error</option>
+                </select>
+            </div>
+            <div class="col-12">
+                <button type="submit" class="action-button">Apply Filters</button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Logs Table -->
+    <div class="logs-table">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Timestamp</th>
+                    <th>User</th>
+                    <th>IP Address</th>
+                    <th>Action</th>
+                    <th>Details</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for log in logs %}
+                <tr>
+                    <td>{{ log.timestamp|date:"Y-m-d H:i:s" }}</td>
+                    <td>{{ log.user }}</td>
+                    <td>{{ log.ip_address }}</td>
+                    <td>{{ log.action }}</td>
+                    <td>{{ log.details }}</td>
+                    <td>
+                        <span class="status-badge status-{{ log.status }}">
+                            {{ log.status|title }}
+                        </span>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Pagination -->
+    {% if logs.has_other_pages %}
+    <nav aria-label="Page navigation">
+        <ul class="pagination">
+            {% if logs.has_previous %}
+            <li class="page-item">
+                <a class="page-link" href="?page={{ logs.previous_page_number }}" aria-label="Previous">
+                    <span aria-hidden="true">&laquo;</span>
+                </a>
+            </li>
+            {% endif %}
+
+            {% for num in logs.paginator.page_range %}
+            <li class="page-item {% if logs.number == num %}active{% endif %}">
+                <a class="page-link" href="?page={{ num }}">{{ num }}</a>
+            </li>
+            {% endfor %}
+
+            {% if logs.has_next %}
+            <li class="page-item">
+                <a class="page-link" href="?page={{ logs.next_page_number }}" aria-label="Next">
+                    <span aria-hidden="true">&raquo;</span>
+                </a>
+            </li>
+            {% endif %}
+        </ul>
+    </nav>
+    {% endif %}
+</div>
+
+<script>
+    // Add smooth animation to cards
+    document.querySelectorAll('.filters-card, .logs-table').forEach((card, index) => {
+        card.style.animation = `fadeInUp 0.5s ease forwards ${index * 0.1}s`;
+    });
+
+    // Add hover effect to form controls
+    document.querySelectorAll('.form-control, .form-select').forEach(control => {
+        control.addEventListener('focus', () => {
+            control.style.transform = 'translateY(-2px)';
+        });
+        control.addEventListener('blur', () => {
+            control.style.transform = 'translateY(0)';
+        });
+    });
+</script>
+{% endblock %} 

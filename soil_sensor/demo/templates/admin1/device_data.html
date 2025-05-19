@@ -1,0 +1,545 @@
+{% extends 'admin1/base.html' %}
+{% block content %}
+
+<style>
+    :root {
+        --primary-green: #4CAF50;
+        --dark-green: #2E7D32;
+        --light-green: #8BC34A;
+        --blue: #2196F3;
+        --dark-blue: #1565C0;
+        --orange: #FF9800;
+        --red: #F44336;
+        --dark-red: #C62828;
+        --gray: #607D8B;
+        --dark-gray: #455A64;
+        --white: #FFFFFF;
+        --light-gray: #F5F5F5;
+        --border-gray: #E0E0E0;
+    }
+
+    body {
+        background: var(--light-gray);
+        font-family: 'Roboto', sans-serif;
+        margin: 0;
+        padding: 0;
+    }
+
+    .dashboard-container {
+        max-width: 1400px;
+        margin: 0 auto;
+        padding: 20px;
+    }
+
+    .dashboard-header {
+        text-align: center;
+        margin-bottom: 30px;
+        position: relative;
+    }
+
+    .dashboard-header h2 {
+        font-size: 2.2rem;
+        color: var(--dark-gray);
+        margin-bottom: 10px;
+        font-weight: 500;
+    }
+
+    .device-name {
+        font-size: 1.2rem;
+        color: var(--gray);
+        background: var(--white);
+        padding: 8px 20px;
+        border-radius: 20px;
+        display: inline-block;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+
+    .divider {
+        height: 2px;
+        background: linear-gradient(to right, transparent, var(--border-gray), transparent);
+        margin: 20px 0;
+        position: relative;
+    }
+
+    .divider::after {
+        content: '';
+        position: absolute;
+        top: -5px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 10px;
+        height: 10px;
+        background: var(--primary-green);
+        border-radius: 50%;
+    }
+
+    .sensor-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+        gap: 20px;
+        margin-top: 30px;
+    }
+
+    .sensor-card {
+        background: var(--white);
+        border-radius: 12px;
+        padding: 20px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        border-left: 4px solid var(--primary-green);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .sensor-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 16px rgba(0,0,0,0.12);
+    }
+
+    .sensor-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 4px;
+        background: var(--primary-green);
+    }
+
+    .sensor-card.temperature {
+        border-left-color: var(--orange);
+    }
+    .sensor-card.temperature::before {
+        background: var(--orange);
+    }
+
+    .sensor-card.moisture {
+        border-left-color: var(--blue);
+    }
+    .sensor-card.moisture::before {
+        background: var(--blue);
+    }
+
+    .sensor-card.conductivity {
+        border-left-color: var(--dark-gray);
+    }
+    .sensor-card.conductivity::before {
+        background: var(--dark-gray);
+    }
+
+    .sensor-card.ph {
+        border-left-color: var(--primary-green);
+    }
+    .sensor-card.ph::before {
+        background: var(--primary-green);
+    }
+
+    .sensor-card.led-status {
+        border-left-color: var(--dark-green);
+    }
+    .sensor-card.led-status::before {
+        background: var(--dark-green);
+    }
+
+    .sensor-card.status {
+        border-left-color: var(--dark-blue);
+    }
+    .sensor-card.status::before {
+        background: var(--dark-blue);
+    }
+
+    .sensor-card.timestamp {
+        border-left-color: var(--gray);
+    }
+    .sensor-card.timestamp::before {
+        background: var(--gray);
+    }
+
+    .sensor-card.warning {
+        border-left-color: var(--orange);
+        background: rgba(255, 152, 0, 0.05);
+    }
+    .sensor-card.warning::before {
+        background: var(--orange);
+    }
+
+    .sensor-card.critical {
+        border-left-color: var(--red);
+        background: rgba(244, 67, 54, 0.05);
+    }
+    .sensor-card.critical::before {
+        background: var(--red);
+    }
+
+    .sensor-card.offline {
+        border-left-color: var(--dark-gray);
+        background: rgba(96, 125, 139, 0.05);
+    }
+    .sensor-card.offline::before {
+        background: var(--dark-gray);
+    }
+
+    .sensor-header {
+        display: flex;
+        align-items: center;
+        margin-bottom: 15px;
+    }
+
+    .sensor-icon {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-right: 12px;
+        font-size: 1.2rem;
+        color: var(--white);
+    }
+
+    .sensor-card.temperature .sensor-icon {
+        background: var(--orange);
+    }
+
+    .sensor-card.moisture .sensor-icon {
+        background: var(--blue);
+    }
+
+    .sensor-card.conductivity .sensor-icon {
+        background: var(--dark-gray);
+    }
+
+    .sensor-card.ph .sensor-icon {
+        background: var(--primary-green);
+    }
+
+    .sensor-card.led-status .sensor-icon {
+        background: var(--dark-green);
+    }
+
+    .sensor-card.status .sensor-icon {
+        background: var(--dark-blue);
+    }
+
+    .sensor-card.timestamp .sensor-icon {
+        background: var(--gray);
+    }
+
+    .sensor-title {
+        font-size: 1rem;
+        font-weight: 500;
+        color: var(--dark-gray);
+        margin: 0;
+    }
+
+    .sensor-value {
+        font-size: 2rem;
+        font-weight: 600;
+        color: var(--dark-gray);
+        margin: 10px 0 5px;
+    }
+
+    .sensor-unit {
+        font-size: 1rem;
+        color: var(--gray);
+        margin-left: 5px;
+    }
+
+    .sensor-status {
+        display: inline-flex;
+        align-items: center;
+        padding: 4px 10px;
+        border-radius: 12px;
+        font-size: 0.8rem;
+        font-weight: 500;
+        margin-top: 10px;
+    }
+
+    .status-optimal {
+        background: rgba(76, 175, 80, 0.1);
+        color: var(--dark-green);
+    }
+
+    .status-warning {
+        background: rgba(255, 152, 0, 0.1);
+        color: var(--orange);
+    }
+
+    .status-critical {
+        background: rgba(244, 67, 54, 0.1);
+        color: var(--red);
+    }
+
+    .status-offline {
+        background: rgba(96, 125, 139, 0.1);
+        color: var(--dark-gray);
+    }
+
+    .status-icon {
+        margin-right: 5px;
+        font-size: 0.8rem;
+    }
+
+    .last-updated {
+        text-align: center;
+        margin-top: 30px;
+        font-size: 0.9rem;
+        color: var(--gray);
+    }
+
+    @media (max-width: 768px) {
+        .sensor-grid {
+            grid-template-columns: 1fr;
+        }
+        
+        .dashboard-header h2 {
+            font-size: 1.8rem;
+        }
+    }
+</style>
+
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+
+<div class="dashboard-container">
+    <div class="dashboard-header">
+        <h2>Device Monitoring Dashboard</h2>
+        <div class="device-name">{{ device_name }}</div>
+    </div>
+
+    <div class="divider"></div>
+
+    <div class="sensor-grid">
+        <!-- Temperature Card -->
+        <div class="sensor-card temperature" role="region" aria-label="Temperature sensor data">
+            <div class="sensor-header">
+                <div class="sensor-icon">
+                    <i class="fas fa-thermometer-half"></i>
+                </div>
+                <h3 class="sensor-title">Temperature</h3>
+            </div>
+            <p class="sensor-value" id="temperature">--<span class="sensor-unit">°C</span></p>
+            <div class="sensor-status status-optimal" id="temperature-status">
+                <i class="fas fa-check-circle status-icon"></i> Optimal
+            </div>
+        </div>
+
+        <!-- Moisture Card -->
+        <div class="sensor-card moisture" role="region" aria-label="Moisture sensor data">
+            <div class="sensor-header">
+                <div class="sensor-icon">
+                    <i class="fas fa-tint"></i>
+                </div>
+                <h3 class="sensor-title">Moisture</h3>
+            </div>
+            <p class="sensor-value" id="moisture">--<span class="sensor-unit">%</span></p>
+            <div class="sensor-status status-optimal" id="moisture-status">
+                <i class="fas fa-check-circle status-icon"></i> Optimal
+            </div>
+        </div>
+
+        <!-- Conductivity Card -->
+        <div class="sensor-card conductivity" role="region" aria-label="Conductivity sensor data">
+            <div class="sensor-header">
+                <div class="sensor-icon">
+                    <i class="fas fa-bolt"></i>
+                </div>
+                <h3 class="sensor-title">Conductivity</h3>
+            </div>
+            <p class="sensor-value" id="conductivity">--<span class="sensor-unit">µS/cm</span></p>
+            <div class="sensor-status status-optimal" id="conductivity-status">
+                <i class="fas fa-check-circle status-icon"></i> Optimal
+            </div>
+        </div>
+
+        <!-- pH Card -->
+        <div class="sensor-card ph" role="region" aria-label="pH sensor data">
+            <div class="sensor-header">
+                <div class="sensor-icon">
+                    <i class="fas fa-vial"></i>
+                </div>
+                <h3 class="sensor-title">pH Level</h3>
+            </div>
+            <p class="sensor-value" id="pH">--</p>
+            <div class="sensor-status status-optimal" id="ph-status">
+                <i class="fas fa-check-circle status-icon"></i> Optimal
+            </div>
+        </div>
+
+        <!-- LED Status Card -->
+        <div class="sensor-card led-status" role="region" aria-label="LED status">
+            <div class="sensor-header">
+                <div class="sensor-icon">
+                    <i class="fas fa-lightbulb"></i>
+                </div>
+                <h3 class="sensor-title">LED Status</h3>
+            </div>
+            <p class="sensor-value" id="led-status">--</p>
+            <div class="sensor-status status-optimal" id="led-status-status">
+                <i class="fas fa-check-circle status-icon"></i> Optimal
+            </div>
+        </div>
+
+        <!-- Device Status Card -->
+        <div class="sensor-card status" role="region" aria-label="Device status">
+            <div class="sensor-header">
+                <div class="sensor-icon">
+                    <i class="fas fa-wifi"></i>
+                </div>
+                <h3 class="sensor-title">Device Status</h3>
+            </div>
+            <p class="sensor-value" id="status">--</p>
+            <div class="sensor-status status-optimal" id="status-status">
+                <i class="fas fa-check-circle status-icon"></i> Online
+            </div>
+        </div>
+
+        <!-- Timestamp Card -->
+        <div class="sensor-card timestamp" role="region" aria-label="Last update timestamp">
+            <div class="sensor-header">
+                <div class="sensor-icon">
+                    <i class="fas fa-clock"></i>
+                </div>
+                <h3 class="sensor-title">Last Updated</h3>
+            </div>
+            <p class="sensor-value" id="timestamp">--</p>
+            <div class="sensor-status status-optimal">
+                <i class="fas fa-sync-alt status-icon"></i> Auto-refresh
+            </div>
+        </div>
+    </div>
+
+    <div class="last-updated">
+        Data refreshes every 2 seconds
+    </div>
+</div>
+
+<script>
+    function updateSensorData() {
+        fetch(`/view_device_data/{{ device_name }}/`)
+            .then(response => response.json())
+            .then(data => {
+                const updateCard = (id, value, unit = '', isWarning = false, isCritical = false, isOffline = false) => {
+                    const element = document.getElementById(id);
+                    const card = element.closest('.sensor-card');
+                    const statusElement = document.getElementById(`${id}-status`);
+                    
+                    // Update value
+                    element.innerHTML = value;
+                    if (unit) element.innerHTML += `<span class="sensor-unit">${unit}</span>`;
+                    
+                    // Reset classes
+                    card.classList.remove('warning', 'critical', 'offline');
+                    statusElement.classList.remove('status-warning', 'status-critical', 'status-offline');
+                    
+                    // Update status
+                    if (isOffline) {
+                        card.classList.add('offline');
+                        statusElement.classList.add('status-offline');
+                        statusElement.innerHTML = '<i class="fas fa-exclamation-triangle status-icon"></i> Offline';
+                    } else if (isCritical) {
+                        card.classList.add('critical');
+                        statusElement.classList.add('status-critical');
+                        statusElement.innerHTML = '<i class="fas fa-exclamation-circle status-icon"></i> Critical';
+                    } else if (isWarning) {
+                        card.classList.add('warning');
+                        statusElement.classList.add('status-warning');
+                        statusElement.innerHTML = '<i class="fas fa-exclamation-triangle status-icon"></i> Warning';
+                    } else {
+                        statusElement.innerHTML = '<i class="fas fa-check-circle status-icon"></i> Optimal';
+                    }
+                    
+                    // Add animation
+                    card.style.animation = 'none';
+                    setTimeout(() => {
+                        card.style.animation = 'fadeIn 0.5s ease-out';
+                    }, 10);
+                };
+
+                const updateStatusCard = (id, value, isGood = true) => {
+                    const element = document.getElementById(id);
+                    const card = element.closest('.sensor-card');
+                    const statusElement = document.getElementById(`${id}-status`);
+                    
+                    element.textContent = value;
+                    
+                    if (isGood) {
+                        statusElement.innerHTML = '<i class="fas fa-check-circle status-icon"></i> Online';
+                        statusElement.className = 'sensor-status status-optimal';
+                        card.classList.remove('critical', 'offline');
+                    } else {
+                        statusElement.innerHTML = '<i class="fas fa-times-circle status-icon"></i> Offline';
+                        statusElement.className = 'sensor-status status-offline';
+                        card.classList.add('offline');
+                    }
+                    
+                    // Add animation
+                    card.style.animation = 'none';
+                    setTimeout(() => {
+                        card.style.animation = 'fadeIn 0.5s ease-out';
+                    }, 10);
+                };
+
+                if (data.status === "Offline") {
+                    updateCard('temperature', "--", "°C", false, false, true);
+                    updateCard('moisture', "--", "%", false, false, true);
+                    updateCard('conductivity', "--", "µS/cm", false, false, true);
+                    updateCard('pH', "--", "", false, false, true);
+                    updateCard('led-status', "Offline", "", false, false, true);
+                    updateStatusCard('status', "Offline", false);
+                    updateCard('timestamp', "--", "", false, false, true);
+                } else {
+                    // Temperature (warning <22 or >28, critical <20 or >30)
+                    updateCard('temperature', data.temperature, "°C", 
+                        parseFloat(data.temperature) < 22 || parseFloat(data.temperature) > 28,
+                        parseFloat(data.temperature) < 20 || parseFloat(data.temperature) > 30);
+                    
+                    // Moisture (warning <25%, critical <20%)
+                    updateCard('moisture', data.moisture, "%",
+                        parseFloat(data.moisture) < 25,
+                        parseFloat(data.moisture) < 20);
+                    
+                    // Conductivity (warning >1500, critical >2000)
+                    updateCard('conductivity', data.conductivity, "µS/cm",
+                        parseFloat(data.conductivity) > 1500,
+                        parseFloat(data.conductivity) > 2000);
+                    
+                    // pH (warning <6.2 or >6.8, critical <6.0 or >7.0)
+                    updateCard('pH', data.pH, "",
+                        parseFloat(data.pH) < 6.2 || parseFloat(data.pH) > 6.8,
+                        parseFloat(data.pH) < 6.0 || parseFloat(data.pH) > 7.0);
+                    
+                    // LED Status
+                    updateCard('led-status', data.led_status);
+                    
+                    // Device Status
+                    updateStatusCard('status', "Online", true);
+                    
+                    // Timestamp
+                    updateCard('timestamp', data.timestamp);
+                }
+            })
+            .catch(error => {
+                console.error("Error fetching data:", error);
+                updateStatusCard('status', "Connection Error", false);
+            });
+    }
+
+    // Initial load
+    updateSensorData();
+    
+    // Refresh every 2 seconds
+    setInterval(updateSensorData, 2000);
+
+    // Add animation for card updates
+    const style = document.createElement('style');
+    style.textContent = `
+        @keyframes fadeIn {
+            from { opacity: 0.5; transform: translateY(5px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    `;
+    document.head.appendChild(style);
+</script>
+
+{% endblock %}

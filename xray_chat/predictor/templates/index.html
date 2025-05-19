@@ -1,0 +1,299 @@
+{% extends 'dashboard.html' %}
+{% load static %}
+
+{% block extra_css %}
+<style>
+  /* Enhanced Hero Section */
+  #hero {
+    position: relative;
+    overflow: hidden;
+    padding: 100px 0;
+    background: linear-gradient(135deg, rgba(37, 117, 252, 0.1), rgba(37, 117, 252, 0.05));
+  }
+  
+  #hero img {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    opacity: 0.2;
+    z-index: -1;
+  }
+  
+  .welcome {
+    padding: 40px;
+    border-radius: 15px;
+    background: rgba(255, 255, 255, 0.9);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+    backdrop-filter: blur(10px);
+    text-align: center;
+    max-width: 800px;
+    margin: 0 auto;
+  }
+  
+  .welcome h2 {
+    font-size: 2.8rem;
+    font-weight: 700;
+    color: #2575fc;
+    margin-bottom: 20px;
+  }
+  
+  /* Feature Boxes */
+  .box {
+    padding: 30px;
+    border-radius: 12px;
+    background: white;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+    height: 100%;
+    transition: all 0.3s ease;
+    border-bottom: 4px solid transparent;
+  }
+  
+  .box:hover {
+    transform: translateY(-10px);
+    box-shadow: 0 15px 30px rgba(37, 117, 252, 0.1);
+    border-bottom: 4px solid #2575fc;
+  }
+  
+  .box h3 {
+    color: #333;
+    font-size: 1.5rem;
+    margin-bottom: 20px;
+    position: relative;
+    padding-bottom: 15px;
+  }
+  
+  .box h3:after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 50px;
+    height: 3px;
+    background: #2575fc;
+  }
+  
+  /* How It Works Section */
+  #how-it-works {
+    background-color: #f9fafc;
+    padding: 80px 0;
+  }
+  
+  .step-box {
+    text-align: center;
+    padding: 30px 20px;
+    border-radius: 12px;
+    background: white;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+    position: relative;
+    z-index: 1;
+    height: 100%;
+    transition: all 0.3s ease;
+  }
+  
+  .step-box:hover {
+    transform: scale(1.05);
+    box-shadow: 0 15px 30px rgba(37, 117, 252, 0.1);
+  }
+  
+  .step {
+    width: 60px;
+    height: 60px;
+    background: #2575fc;
+    color: white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+    font-weight: 700;
+    margin: 0 auto 20px;
+  }
+  
+  /* Chatbot Section */
+  #chatbot-features {
+    padding: 80px 0;
+  }
+  
+  #chatbot-features img {
+    border-radius: 12px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+  }
+  
+  #chatbot-features ul {
+    padding-left: 0;
+  }
+  
+  #chatbot-features li {
+    padding: 10px 0;
+    list-style: none;
+  }
+  
+  #chatbot-features i {
+    color: #2575fc;
+    margin-right: 10px;
+    font-size: 1.2rem;
+  }
+  
+  /* Section Headers */
+  .section-header {
+    text-align: center;
+    margin-bottom: 50px;
+  }
+  
+  .section-header h2 {
+    font-size: 2.2rem;
+    font-weight: 700;
+    color: #333;
+    margin-bottom: 15px;
+    position: relative;
+    display: inline-block;
+    padding-bottom: 15px;
+  }
+  
+  .section-header h2:after {
+    content: '';
+    position: absolute;
+    width: 80px;
+    height: 3px;
+    background: #2575fc;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+  }
+  
+  .section-header p {
+    color: #777;
+    font-size: 1.1rem;
+  }
+  
+  /* Responsive adjustments */
+  @media (max-width: 768px) {
+    .welcome h2 {
+      font-size: 2rem;
+    }
+    
+    .box, .step-box {
+      margin-bottom: 20px;
+    }
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<section id="hero" class="hero section light-background">
+  <img src="static/img/hero-bg.jpg" alt="" data-aos="fade-in">
+  <div class="container position-relative">
+    <div class="welcome position-relative" data-aos="fade-down" data-aos-delay="100">
+      <h3>WELCOME TO </h3>
+      <h2>Voice Based VQA </h2>
+      <p>X-ray Analysis for Medical Professionals</p>
+    </div><!-- End Welcome -->
+  </div>
+</section>
+
+<!-- Features Section -->
+<section id="features" class="features section">
+  <div class="container" data-aos="fade-up">
+    <header class="section-header">
+      <h2>Our Services</h2>
+      <p>Comprehensive X-ray Analysis and Diagnostics</p>
+    </header>
+
+    <div class="row mt-5">
+      <div class="col-lg-4" data-aos="fade-up" data-aos-delay="200">
+        <div class="box">
+          <h3>Hand Fracture Analysis</h3>
+          <p>Our system analyzes hand X-rays, providing accurate results in seconds. Upload your X-ray image and get instant analysis of potential issues.</p>
+        </div>
+      </div>
+
+      <div class="col-lg-4" data-aos="fade-up" data-aos-delay="300">
+        <div class="box">
+          <h3>Leg Fracture Analysis</h3>
+          <p>Specialized in identifying various types of leg fractures, our system can detect hairline fractures, compound fractures, and more. Upload leg X-rays for quick and accurate diagnostics.</p>
+        </div>
+      </div>
+
+      <div class="col-lg-4" data-aos="fade-up" data-aos-delay="400">
+        <div class="box">
+          <h3>Chest X-ray Analysis</h3>
+          <p>Comprehensive chest X-ray analysis that can identify fractures in ribs and other chest bones. Get insights into potential issues with just one upload.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- How It Works Section -->
+<section id="how-it-works" class="how-it-works section">
+  <div class="container" data-aos="fade-up">
+    <header class="section-header">
+      <h2>How It Works</h2>
+      <p>Simple, Fast, and Accurate</p>
+    </header>
+
+    <div class="row gy-4 mt-5">
+      <div class="col-lg-3" data-aos="fade-up" data-aos-delay="200">
+        <div class="step-box">
+          <div class="step">1</div>
+          <h3>Upload</h3>
+          <p>Upload your X-ray image through our secure platform</p>
+        </div>
+      </div>
+
+      <div class="col-lg-3" data-aos="fade-up" data-aos-delay="300">
+        <div class="step-box">
+          <div class="step">2</div>
+          <h3>Analyze</h3>
+          <p>Our system instantly analyzes the image for fractures</p>
+        </div>
+      </div>
+
+      <div class="col-lg-3" data-aos="fade-up" data-aos-delay="400">
+        <div class="step-box">
+          <div class="step">3</div>
+          <h3>Results</h3>
+          <p>Receive analyzed results in seconds</p>
+        </div>
+      </div>
+
+      <div class="col-lg-3" data-aos="fade-up" data-aos-delay="500">
+        <div class="step-box">
+          <div class="step">4</div>
+          <h3>Ask Questions</h3>
+          <p>Ask questions about your X-Ray image</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Interactive Chatbot Section -->
+<section id="chatbot-features" class="chatbot-features section">
+  <div class="container" data-aos="fade-up">
+    <header class="section-header">
+      <h2>Interactive Voice-Powered Chatbot</h2>
+      <p>Get Answers to Your Questions Instantly</p>
+    </header>
+
+    <div class="row mt-5">
+      <div class="col-lg-6" data-aos="fade-right" data-aos-delay="200">
+        <img src="static/img/chatbot.jpg" class="img-fluid" alt="Chatbot Image">
+      </div>
+      <div class="col-lg-6 pt-4 pt-lg-0 content" data-aos="fade-left" data-aos-delay="300">
+        <p>Our advanced chatbot allows you to:</p>
+        <ul>
+          <li><i class="bi bi-check-circle"></i> Use voice commands for hands-free interaction</li>
+          <li><i class="bi bi-check-circle"></i> Ask questions about your X_Ray image</li>
+          <li><i class="bi bi-check-circle"></i> Get instant answers to your queries </li>
+          
+        
+        </ul>
+        <p>Each analysis type (hand, leg, chest) has a dedicated class, providing you with precise and relevant information about your specific condition.</p>
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}

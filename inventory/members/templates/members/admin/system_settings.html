@@ -1,0 +1,287 @@
+{% extends 'members/base_landing.html' %}
+{% load static %}
+
+{% block content %}
+<style>
+    :root {
+        --primary-color: #4a90e2;
+        --secondary-color: #2c3e50;
+        --text-dark: #2c3e50;
+        --text-light: #ffffff;
+        --card-bg: #ffffff;
+        --border-color: #e0e0e0;
+        --success-color: #00C851;
+        --warning-color: #ffbb33;
+        --danger-color: #ff4444;
+    }
+
+    body {
+        background: #f5f7fa;
+        color: var(--text-dark);
+        font-family: 'Poppins', sans-serif;
+        min-height: 100vh;
+    }
+
+    .settings-container {
+        padding: 2rem;
+    }
+
+    .settings-title {
+        font-size: 2.5rem;
+        font-weight: 700;
+        margin-bottom: 2rem;
+        color: var(--secondary-color);
+    }
+
+    .settings-card {
+        background: var(--card-bg);
+        border: 1px solid var(--border-color);
+        border-radius: 15px;
+        padding: 1.5rem;
+        margin-bottom: 2rem;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+        transition: all 0.3s ease;
+    }
+
+    .settings-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 15px rgba(0, 0, 0, 0.1);
+    }
+
+    .section-title {
+        font-size: 1.5rem;
+        font-weight: 600;
+        color: var(--primary-color);
+        margin-bottom: 1.5rem;
+        padding-bottom: 0.5rem;
+        border-bottom: 1px solid var(--border-color);
+    }
+
+    .form-label {
+        color: var(--text-dark);
+        opacity: 0.8;
+        margin-bottom: 0.5rem;
+    }
+
+    .form-control, .form-select {
+        background: #ffffff;
+        border: 1px solid var(--border-color);
+        color: var(--text-dark);
+        padding: 0.75rem 1rem;
+        border-radius: 8px;
+        transition: all 0.3s ease;
+    }
+
+    .form-control:focus, .form-select:focus {
+        border-color: var(--primary-color);
+        box-shadow: 0 0 0 0.2rem rgba(74, 144, 226, 0.25);
+        color: var(--text-dark);
+    }
+
+    .form-check-input {
+        border-color: var(--border-color);
+    }
+
+    .form-check-input:checked {
+        background-color: var(--primary-color);
+        border-color: var(--primary-color);
+    }
+
+    .form-check-label {
+        color: var(--text-dark);
+        opacity: 0.8;
+    }
+
+    .neon-button {
+        background: var(--primary-color);
+        border: none;
+        color: var(--text-light);
+        padding: 0.75rem 1.5rem;
+        font-size: 1rem;
+        border-radius: 8px;
+        transition: all 0.3s ease;
+        cursor: pointer;
+        text-decoration: none;
+    }
+
+    .neon-button:hover {
+        background: #357abd;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(74, 144, 226, 0.2);
+    }
+
+    .neon-button.secondary {
+        background: var(--secondary-color);
+    }
+
+    .neon-button.secondary:hover {
+        background: #1a252f;
+    }
+
+    .page-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 2rem;
+    }
+
+    .header-actions {
+        display: flex;
+        gap: 1rem;
+    }
+
+    .neon-button.back {
+        background: var(--secondary-color);
+    }
+
+    .neon-button.back:hover {
+        background: #1a252f;
+    }
+</style>
+
+<div class="settings-container">
+    <div class="page-header">
+        <h1 class="settings-title">System Settings</h1>
+        <div class="header-actions">
+            <a href="{% url 'admin_dashboard' %}" class="neon-button back">
+                <i class="fas fa-arrow-left"></i> Back to Dashboard
+            </a>
+        </div>
+    </div>
+
+    <form method="post" action="">
+        {% csrf_token %}
+        
+        <!-- Application Settings -->
+        <div class="settings-card">
+            <h3 class="section-title">Application Settings</h3>
+            
+            <div class="row mb-3">
+                <div class="col-md-6">
+                    <label for="app_name" class="form-label">Application Name</label>
+                    <input type="text" class="form-control" id="app_name" name="app_name" value="Inventory Management System">
+                </div>
+                <div class="col-md-6">
+                    <label for="app_logo" class="form-label">Application Logo</label>
+                    <input type="file" class="form-control" id="app_logo" name="app_logo">
+                </div>
+            </div>
+            
+            <div class="row mb-3">
+                <div class="col-md-6">
+                    <label for="default_currency" class="form-label">Default Currency</label>
+                    <select class="form-select" id="default_currency" name="default_currency">
+                        <option value="USD">USD ($)</option>
+                        <option value="EUR">EUR (€)</option>
+                        <option value="GBP">GBP (£)</option>
+                        <option value="INR">INR (₹)</option>
+                    </select>
+                </div>
+                <div class="col-md-6">
+                    <label for="pagination_limit" class="form-label">Default Pagination Limit</label>
+                    <select class="form-select" id="pagination_limit" name="pagination_limit">
+                        <option value="10">10 items</option>
+                        <option value="25" selected>25 items</option>
+                        <option value="50">50 items</option>
+                        <option value="100">100 items</option>
+                    </select>
+                </div>
+            </div>
+            
+            <div class="form-check mb-3">
+                <input class="form-check-input" type="checkbox" id="enable_notifications" name="enable_notifications" checked>
+                <label class="form-check-label" for="enable_notifications">
+                    Enable System Notifications
+                </label>
+            </div>
+        </div>
+        
+        <!-- Security Settings -->
+        <div class="settings-card">
+            <h3 class="section-title">Security Settings</h3>
+            
+            <div class="row mb-3">
+                <div class="col-md-6">
+                    <label for="session_timeout" class="form-label">Session Timeout (minutes)</label>
+                    <input type="number" class="form-control" id="session_timeout" name="session_timeout" value="30">
+                </div>
+                <div class="col-md-6">
+                    <label for="password_expiry" class="form-label">Password Expiry (days)</label>
+                    <input type="number" class="form-control" id="password_expiry" name="password_expiry" value="90">
+                </div>
+            </div>
+            
+            <div class="row mb-3">
+                <div class="col-md-6">
+                    <label for="min_password_length" class="form-label">Minimum Password Length</label>
+                    <input type="number" class="form-control" id="min_password_length" name="min_password_length" value="8">
+                </div>
+                <div class="col-md-6">
+                    <div class="form-check mt-4">
+                        <input class="form-check-input" type="checkbox" id="require_special_chars" name="require_special_chars" checked>
+                        <label class="form-check-label" for="require_special_chars">
+                            Require Special Characters in Passwords
+                        </label>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="form-check mb-3">
+                <input class="form-check-input" type="checkbox" id="enable_2fa" name="enable_2fa">
+                <label class="form-check-label" for="enable_2fa">
+                    Enable Two-Factor Authentication
+                </label>
+            </div>
+        </div>
+        
+        <!-- Backup Settings -->
+        <div class="settings-card">
+            <h3 class="section-title">Backup Configuration</h3>
+            
+            <div class="row mb-3">
+                <div class="col-md-6">
+                    <label for="backup_frequency" class="form-label">Backup Frequency</label>
+                    <select class="form-select" id="backup_frequency" name="backup_frequency">
+                        <option value="daily">Daily</option>
+                        <option value="weekly" selected>Weekly</option>
+                        <option value="monthly">Monthly</option>
+                    </select>
+                </div>
+                <div class="col-md-6">
+                    <label for="backup_time" class="form-label">Backup Time</label>
+                    <input type="time" class="form-control" id="backup_time" name="backup_time" value="01:00">
+                </div>
+            </div>
+            
+            <div class="form-check mb-3">
+                <input class="form-check-input" type="checkbox" id="enable_cloud_backup" name="enable_cloud_backup" checked>
+                <label class="form-check-label" for="enable_cloud_backup">
+                    Enable Cloud Backup
+                </label>
+            </div>
+        </div>
+        
+        <div class="d-flex justify-content-between">
+            <button type="submit" class="neon-button">Save Settings</button>
+            <button type="reset" class="neon-button secondary">Reset to Defaults</button>
+        </div>
+    </form>
+</div>
+
+<script>
+    // Add smooth animation to settings cards
+    document.querySelectorAll('.settings-card').forEach((card, index) => {
+        card.style.animation = `fadeInUp 0.5s ease forwards ${index * 0.1}s`;
+    });
+
+    // Add hover effect to form controls
+    document.querySelectorAll('.form-control, .form-select').forEach(control => {
+        control.addEventListener('focus', () => {
+            control.style.transform = 'translateY(-2px)';
+        });
+        control.addEventListener('blur', () => {
+            control.style.transform = 'translateY(0)';
+        });
+    });
+</script>
+{% endblock %} 

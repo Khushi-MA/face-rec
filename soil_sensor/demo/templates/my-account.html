@@ -1,0 +1,244 @@
+{% extends 'common_links.html' %}
+{% block title %}Account Details{% endblock %}
+{% block content %}
+
+<!-- account-details section -->
+<section class="flat-spacing-8">
+    <div class="container">
+        <div class="row">
+            <!-- Sidebar -->
+            <div class="col-lg-3">
+                <div class="wrap-sidebar-account">
+                    <ul class="my-account-nav">
+                        <li><span class="my-account-nav-item active">Account Details</span></li>
+                        <li><a href="{% url 'edit_profile' %}" class="my-account-nav-item">Edit Profile</a></li>
+                        <li><a href="/api/logout/" class="my-account-nav-item">Logout</a></li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Account Details Content -->
+            <div class="col-lg-9">
+                <div class="account-details-content">
+                    <div class="details-section">
+                        <h6 class="fw-6 mb-3">My Profile</h6>
+                        <div class="profile-photo-section">
+                            {% if user.profile_photo %}
+                                <img src="{{ user.profile_photo.url }}" alt="Profile Photo" class="current-photo">
+                            {% else %}
+                                <div class="no-photo">No photo uploaded</div>
+                            {% endif %}
+                        </div>
+                        <div class="info-grid">
+                            <div class="info-item">
+                                <span class="label">My ID:</span>
+                                <span class="value">{{ user.id }}</span>
+                            </div>
+                            <div class="info-item">
+                                <span class="label">My Name:</span>
+                                <span class="value">{{ user.full_name }}</span>
+                            </div>
+                            <div class="info-item">
+                                <span class="label">Email:</span>
+                                <span class="value">{{ user.email }}</span>
+                            </div>
+                            <div class="info-item">
+                                <span class="label">Contact Number:</span>
+                                <span class="value">{{ user.contact_no }}</span>
+                            </div>
+                            <div class="info-item">
+                                <span class="label">Place:</span>
+                                <span class="value">{{ user.place }}</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="details-section mt-4">
+                        <h6 class="fw-6 mb-3">My Registered Devices ({{ devices|length }})</h6>
+                        {% if devices %}
+                            <div class="table-responsive">
+                                <table class="device-table">
+                                    <thead>
+                                        <tr>
+                                            <th class="fw-6">Device Name</th>
+                                            <th class="fw-6">Created At</th>
+                                            <th class="fw-6">Subscription End Date</th>
+                                            <th class="fw-6">Days Remaining</th>
+                                            <th class="fw-6">Status</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for device in devices %}
+                                        <tr>
+                                            <td>{{ device.device_name }}</td>
+                                            <td>{{ device.created_at|date:"M d, Y H:i" }}</td>
+                                            <td>
+                                                {% if device.subscription_end_date %}
+                                                    {{ device.subscription_end_date|date:"M d, Y H:i" }}
+                                                {% else %}
+                                                    Not Set
+                                                {% endif %}
+                                            </td>
+                                            <td>{{ device.days_remaining }}</td>
+                                            <td>
+                                                <span class="badge {% if device.is_active %}bg-success{% else %}bg-danger{% endif %}">
+                                                    {{ device.is_active|yesno:"Active,Inactive" }}
+                                                </span>
+                                            </td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        {% else %}
+                            <p class="text-center">No devices registered.</p>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+<!-- /account-details section -->
+
+<style>
+    /* Sidebar styling (reused) */
+    .wrap-sidebar-account {
+        background-color: #58836d;
+        padding: 15px;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+    .my-account-nav { list-style: none; padding: 0; margin: 0; }
+    .my-account-nav-item {
+        display: block; padding: 10px 15px; color: #ffffff; text-decoration: none; transition: background-color 0.3s ease;
+    }
+    .my-account-nav-item:hover { background-color: #58a380; color: #ffffff; }
+    .my-account-nav-item.active { background-color: #2a5a47; color: #ffffff; font-weight: bold; }
+    .my-account-nav-item a { color: inherit; text-decoration: none; display: block; }
+
+    /* Account details content */
+    .account-details-content {
+        background-color: #e0dede; /* Light green */
+        padding: 20px;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+
+    /* Info grid */
+    .info-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 20px;
+        background-color: #ffffff;
+        padding: 15px;
+        border-radius: 4px;
+    }
+    .info-item {
+        display: flex;
+        flex-direction: column;
+    }
+    .info-item .label {
+        color: #6c757d; /* Muted gray */
+        font-weight: 500;
+    }
+    .info-item .value {
+        color: #333; /* Dark text */
+        font-weight: 600;
+    }
+
+    /* Responsive table wrapper */
+    .table-responsive {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch; /* Smooth scrolling on mobile */
+    }
+
+    /* Device table */
+    .device-table {
+        width: 100%;
+        border-collapse: collapse;
+        background-color: #ffffff;
+        border-radius: 4px;
+        overflow: hidden;
+    }
+    .device-table thead th {
+        background-color: #c3e6cb; /* Slightly darker light green */
+        color: hsl(134, 61%, 21%); /* Dark green */
+        padding: 12px;
+        text-align: left;
+        font-weight: 600;
+        white-space: nowrap; /* Prevent header text wrapping */
+    }
+    .device-table tbody tr {
+        border-bottom: 1px solid #e0e0e0;
+    }
+    .device-table tbody td {
+        padding: 12px;
+        color: #333;
+        white-space: nowrap; /* Prevent text wrapping by default */
+    }
+    .device-table tbody tr:hover {
+        background-color: #f1f8f3; /* Very light green on hover */
+    }
+    .badge.bg-success { background-color: #28a745; }
+    .badge.bg-danger { background-color: #dc3545; }
+
+    /* No devices message */
+    .account-details-content p.text-center {
+        padding: 20px;
+        color: #6c757d;
+        font-style: italic;
+    }
+
+    /* Mobile adjustments */
+    @media (max-width: 768px) {
+        .account-details-content {
+            padding: 15px;
+        }
+        .info-grid {
+            grid-template-columns: 1fr; /* Stack items in a single column */
+            gap: 10px;
+        }
+        .device-table {
+            min-width: 600px; /* Ensure table is wide enough to display content */
+        }
+        .device-table thead th, .device-table tbody td {
+            padding: 8px; /* Reduce padding for compactness */
+            font-size: 14px; /* Slightly smaller text */
+        }
+    }
+
+    @media (max-width: 576px) {
+        .device-table thead th, .device-table tbody td {
+            font-size: 12px; /* Even smaller text for very small screens */
+        }
+    }
+
+    /* Profile photo section */
+    .profile-photo-section {
+        margin-bottom: 20px;
+        text-align: center;
+    }
+    .current-photo {
+        width: 150px;
+        height: 150px;
+        border-radius: 50%;
+        object-fit: cover;
+        border: 3px solid #58836d;
+        margin-bottom: 10px;
+    }
+    .no-photo {
+        width: 150px;
+        height: 150px;
+        border-radius: 50%;
+        background-color: #f8f9fa;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto;
+        border: 3px solid #58836d;
+        color: #6c757d;
+    }
+</style>
+
+{% endblock %}

@@ -1,0 +1,428 @@
+{% extends 'common_links.html' %}
+{% block content %}
+{% load static %}
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+<style>
+
+    body {
+        background: rgb(34,193,195);
+        background: linear-gradient(301deg, rgba(34,193,195,1) 0%, rgba(253,185,45,1) 100%);
+        min-height: 100vh;
+        position: relative;
+        overflow-x: hidden;
+    }
+
+    /* Subtle background animation */
+    body::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        animation: backgroundPulse 10s infinite ease-in-out;
+        z-index: -1;
+    }
+
+    .container.mt-5 {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 20px;
+    }
+
+    .card {
+        border-radius: 15px;
+        transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
+        background: linear-gradient(145deg, #ffffff, #f0f0f0);
+        border: none;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        animation: slideIn 0.8s ease-out forwards;
+        opacity: 0;
+    }
+
+    .card:hover {
+        transform: translateY(-10px) rotate(1deg);
+        box-shadow: 0 15px 30px rgba(0, 0, 0, 0.3);
+    }
+
+    .card-icon {
+        font-size: 3rem;
+        color: #27ae60;
+        margin-bottom: 20px;
+        animation: bounceIn 0.6s ease-out;
+    }
+
+    .card-title {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #333;
+        margin-bottom: 15px;
+        animation: fadeInDown 0.6s ease-out;
+    }
+
+    /* Mini-cards for plot details */
+    .plot-details-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 10px;
+        margin-top: 10px;
+    }
+
+    .plot-card {
+        background: #fff;
+        border-radius: 10px;
+        padding: 10px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        text-align: center;
+        transition: transform 0.3s ease;
+        animation: fadeInUp 0.8s ease-out;
+    }
+
+    .plot-card:hover {
+        transform: translateY(-3px);
+    }
+
+    .plot-card p {
+        margin: 0;
+        font-size: 0.9rem;
+        color: #333;
+    }
+
+    .plot-card .label {
+        font-size: 1.1rem;
+        color: #27ae60; /* Match the card-icon color */
+        animation: bounceIn 0.6s ease-out;
+        font-weight: 600;
+    }
+
+    .plot-card .value {
+        font-weight: 700;
+        margin-top: 5px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 5px;
+    }
+
+    .plot-card .value i {
+        font-size: 1.2rem;
+        color: #27ae60; /* Match the card-icon color */
+        animation: bounceIn 0.6s ease-out;
+    }
+
+    .plot-card .status-badge {
+        display: inline-block;
+        margin-top: 5px;
+        padding: 6px 12px;
+        border-radius: 5px;
+        color: white;
+        font-weight: 600;
+        font-size: 0.9rem;
+        transition: transform 0.3s ease;
+    }
+
+    .plot-card .status-badge:hover {
+        transform: scale(1.05);
+    }
+
+    .text-danger-bg {
+        background-color: #dc3545 !important;
+    }
+
+    .text-success-bg {
+        background-color: #28a745 !important;
+    }
+
+    .btn-custom {
+        border-radius: 8px;
+        transition: background 0.3s ease-in-out, transform 0.3s ease-in-out;
+        padding: 10px 20px;
+        animation: bounceIn 0.6s ease-out;
+    }
+
+    /* Teal and Yellow-themed buttons to match the background */
+    .btn-success.btn-custom {
+        background: #1a8c8e; /* Darker teal for contrast */
+        color: white;
+        border: none;
+    }
+
+    .btn-success.btn-custom:hover {
+        background: linear-gradient(145deg, #1a8c8e, #22c1c3); /* Gradient with the base teal */
+        transform: scale(1.05);
+    }
+
+    .btn-warning.btn-custom {
+        background: #22c1c3; /* Teal from the background */
+        color: white;
+        border: none;
+    }
+
+    .btn-warning.btn-custom:hover {
+        background: linear-gradient(145deg, #22c1c3, #1a8c8e); /* Gradient with a darker teal */
+        transform: scale(1.05);
+    }
+
+    .btn-primary.btn-custom {
+        background: #fdbb2d; /* Yellow from the background */
+        color: #333; /* Dark text for contrast */
+        border: none;
+    }
+
+    .btn-primary.btn-custom:hover {
+        background: linear-gradient(145deg, #fdbb2d, #e0a825); /* Gradient with a darker yellow */
+        transform: scale(1.05);
+    }
+
+    .btn-icon {
+        margin-right: 5px;
+    }
+
+    .alert {
+        border-radius: 10px;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        animation: fadeIn 1s ease-out;
+    }
+
+    /* Animations */
+    @keyframes slideIn {
+        from { opacity: 0; transform: translateY(30px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes fadeInDown {
+        from { opacity: 0; transform: translateY(-20px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes fadeInUp {
+        from { opacity: 0; transform: translateY(20px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes bounceIn {
+        0% { transform: scale(0.3); opacity: 0; }
+        50% { transform: scale(1.05); opacity: 1; }
+        100% { transform: scale(1); opacity: 1; }
+    }
+
+    @keyframes fadeIn {
+        from { opacity: 0; }
+        to { opacity: 1; }
+    }
+
+    @keyframes backgroundPulse {
+        0% { transform: scale(1); opacity: 0.5; }
+        50% { transform: scale(1.2); opacity: 0.8; }
+        100% { transform: scale(1); opacity: 0.5; }
+    }
+
+    /* Responsive Design */
+    @media (max-width: 768px) {
+        .container.mt-5 {
+            padding: 10px;
+        }
+
+        .card {
+            margin-bottom: 15px;
+            padding: 10px;
+        }
+
+        .card-icon {
+            font-size: 2.5rem;
+            margin-bottom: 15px;
+        }
+
+        .card-title {
+            font-size: 1.3rem;
+            margin-bottom: 10px;
+        }
+
+        .plot-details-grid {
+            grid-template-columns: 1fr; /* Single column for mobile */
+            gap: 5px;
+            margin-top: 5px;
+        }
+
+        .plot-card {
+            padding: 8px;
+        }
+
+        .plot-card p {
+            font-size: 0.8rem;
+        }
+
+        .plot-card .value {
+            margin-top: 3px;
+        }
+
+        .plot-card .value i {
+            font-size: 0.9rem;
+        }
+
+        .plot-card .status-badge {
+            padding: 4px 8px;
+            font-size: 0.7rem;
+        }
+
+        .btn-custom {
+            padding: 8px 15px;
+            font-size: 0.9rem;
+        }
+
+        .d-flex.justify-content-center.mt-3 {
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .btn-custom.me-2 {
+            margin-right: 0 !important;
+            margin-bottom: 10px;
+        }
+    }
+</style>
+
+<div class="container mt-3">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <a href="{% url 'add_plot' %}" class="btn btn-success text-white btn-custom">
+            <i class="fas fa-info-circle text-info"></i> Add Plot
+        </a>
+    </div>
+
+    {% if plots %}
+        <div class="row">
+            {% for plot in plots %}
+            <div class="col-md-6 mb-4">
+                <div class="card shadow-lg">
+                    <div class="card-body text-center">
+                        <div class="card-icon">
+                            <i class="icon-plant"></i>
+                        </div>
+                        <h5 class="card-title">
+                            <div class="plot-card">
+                                <p class="value"><i class="icon-place btn-icon"></i> Your Plot: {{ plot.plot_name }} (Plot #{{ plot.plot_number }})</p>
+                            </div>
+                        </h5>
+
+                        <!-- Plot Details in Mini-Cards -->
+                        <div class="plot-details-grid">
+                            <div class="plot-card">
+                                <p class="label"><i class="icon-plant btn-icon"></i> Crop</p>
+                                <p class="value"> {{ plot.crop_name }}</p>
+                            </div>
+                            <div class="plot-card">
+                                <p class="label"><i class="icon-machine btn-icon"></i> Device</p>
+                                <p class="value"></i> {{ plot.device.device_name }}</p>
+                            </div>
+                            <div class="plot-card">
+                                <p class="label"><i class="icon-calendar btn-icon"></i> Subscription Status</p>
+                                <span class="status-badge {% if plot.device.is_active %}text-success-bg{% else %}text-danger-bg{% endif %}">
+                                    {% if plot.device.is_active %} Active {% else %} Expired {% endif %}
+                                </span>
+                            </div>
+                            <div class="plot-card">
+                                <p class="label"><i class="icon-time btn-icon"></i> Expires On</p>
+                                <p class="value">
+                                   
+                                    {% if plot.device.subscription_end_date %}
+                                        {{ plot.device.subscription_end_date|date:"d M Y" }}
+                                    {% else %}
+                                        No Subscription
+                                    {% endif %}
+                                </p>
+                            </div>
+                        </div>
+                        <div class="plot-card mt-3">
+                            <p class="label"><i class="fas fa-power-off text-danger"></i> Motor Status</p>
+                            <span class="status-badge {% if plot.device.motor_status == 'ON' %}text-success-bg{% else %}text-danger-bg{% endif %}">
+                                {{ plot.device.motor_status }}
+                            </span>
+                        </div>
+
+                        <!-- Buttons -->
+                        <div class="d-flex justify-content-center mt-3">
+                            {% if plot.device.is_active %}
+                                <a href="{% url 'user_device_data' plot.device.device_name %}" class="btn btn-warning btn-custom me-2">
+                                    <i class="icon-view btn-icon"></i> View Device Data
+                                </a>
+                                <a href="{% url 'led_control_page' plot.device.device_name %}" class="btn btn-primary btn-custom me-2">
+                                    <i class="icon-lightning btn-icon"></i> Motor Status
+                                </a>
+                                <a href="{% url 'delete_plot' plot.id %}" class="btn btn-danger btn-custom">
+                                    <i class="fa-solid fa-trash-can"></i> Delete
+                                </a>
+                            {% else %}
+                                <button class="btn btn-warning btn-custom me-2" onclick="showSubscriptionAlert()">
+                                    <i class="icon-view btn-icon"></i> View Device Data
+                                </button>
+                                <button class="btn btn-primary btn-custom" onclick="showSubscriptionAlert()">
+                                    <i class="icon-lightning btn-icon"></i> Motor Status
+                                </button>
+                                <a href="{% url 'delete_plot' plot.id %}" class="btn btn-danger btn-custom m-2">
+                                    <i class="fa-solid fa-trash-can"></i> Delete
+                                </a>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    {% else %}
+    <div class="alert alert-warning text-center">
+        <i class="icon-no-result btn-icon"></i> 
+        No plots available. If you don’t have a device, please <strong>contact us to buy one</strong>. 
+        <a href="{% url 'contact' %}" class="btn btn-sm btn-success btn-custom">
+            <i class="icon-plus btn-icon"></i> Contact
+        </a>
+    </div>
+    
+    {% endif %}
+</div>
+<!-- SweetAlert -->
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+    function showSubscriptionAlert() {
+        Swal.fire({
+            title: "Subscription Expired!",
+            text: "Your subscription has ended. Please renew to continue using this feature.",
+            icon: "warning",
+            confirmButtonText: "Contact Support",
+            confirmButtonColor: "#24beed",
+            animation: true
+        }).then((result) => {
+            if (result.isConfirmed) {
+                window.location.href = "{% url 'contact' %}";  // 👈 Replace with your actual contact URL
+            }
+        });
+    }
+
+    // Scroll animation for cards
+    document.addEventListener("DOMContentLoaded", function () {
+        const cards = document.querySelectorAll('.card');
+        const observerOptions = {
+            threshold: 0.2,
+            rootMargin: "0px 0px -50px 0px"
+        };
+
+        const observer = new IntersectionObserver((entries, observer) => {
+            entries.forEach((entry, index) => {
+                if (entry.isIntersecting) {
+                    setTimeout(() => {
+                        entry.target.style.opacity = '1';
+                        entry.target.style.animation = 'slideIn 0.8s ease-out forwards';
+                    }, index * 200); // Staggered animation
+                    observer.unobserve(entry.target);
+                }
+            });
+        }, observerOptions);
+
+        cards.forEach(card => {
+            observer.observe(card);
+        });
+    });
+</script>
+
+
+{% endblock %}

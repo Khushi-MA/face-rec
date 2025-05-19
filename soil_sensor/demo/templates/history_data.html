@@ -1,0 +1,250 @@
+{% extends 'common_links.html' %}
+{% block content %}
+
+<style>
+     body {
+        background: linear-gradient(135deg, #369b58, #b4e4b8);
+    }
+
+
+    .main-container {
+        width: 90%;
+        margin: auto;
+        padding: 20px;
+        background: #ffffff;
+        border-radius: 10px;
+        box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+    }
+
+    .horizontal-bar {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 15px;
+        background: #1faa32;
+        color: white;
+        
+        border-radius: 8px;
+        margin-bottom: 20px;
+    }
+
+  
+
+    .report-container {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .report-icon {
+        font-size: 24px;
+    }
+
+    .date-form {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 15px;
+        margin-bottom: 20px;
+        background: #e9ecef;
+        padding: 15px;
+        border-radius: 8px;
+    }
+
+    .date-form label {
+        font-weight: bold;
+    }
+
+    .date-form select,
+    .date-form input {
+        padding: 8px;
+        border-radius: 5px;
+        border: 1px solid #ccc;
+    }
+
+    .submit-button, .export-button {
+        padding: 10px 15px;
+        border: none;
+        border-radius: 5px;
+        font-size: 16px;
+        font-weight: bold;
+        cursor: pointer;
+    }
+
+    .submit-button {
+        background: #28a745;
+        color: white;
+    }
+
+    .export-button {
+        background: #17a2b8;
+        color: white;
+    }
+
+    .table-heading {
+        text-align: center;
+        margin: 20px 0;
+    }
+
+    .table-responsive {
+        overflow-x: auto;
+    }
+
+    .data-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 20px;
+        background: #fff;
+        border-radius: 10px;
+        overflow: hidden;
+    }
+
+    .data-table th, .data-table td {
+        padding: 12px;
+        text-align: center;
+        border: 1px solid #ddd;
+    }
+
+    .data-table th {
+        background: #007bff;
+        color: white;
+    }
+
+    .data-table tbody tr:nth-child(even) {
+        background: #f2f2f2;
+    }
+
+    .pagination {
+        text-align: center;
+        margin-top: 20px;
+    }
+
+    .pagination-button {
+        padding: 8px 12px;
+        margin: 5px;
+        border: none;
+        border-radius: 5px;
+        font-size: 14px;
+        cursor: pointer;
+        text-decoration: none;
+    }
+
+    .pagination-button.first, .pagination-button.last {
+        background: #ff5733;
+        color: white;
+    }
+
+    .pagination-button.previous, .pagination-button.next {
+        background: #28a745;
+        color: white;
+    }
+
+    .no-data-message {
+        text-align: center;
+        color: red;
+        font-size: 18px;
+        margin-top: 20px;
+    }
+</style>
+
+<div class="main-container">
+    <div class="horizontal-bar">
+        <div class="report-container">
+            <h5 class="report-heading" style="color: #ffffff;">Historical Report of Device Data</h5>
+            <i class="fas fa-chart-line report-icon"></i>
+        </div>
+    </div>
+
+<!-- Form for Selecting Date Range -->
+<!-- Form for Selecting Device and Date Range -->
+<form class="date-form" method="GET" action="{% url 'history' %}">
+    <label for="device-name">Select Device:</label>
+    <select id="device-name" name="device-name" required>
+        {% for device in user_devices %}
+            <option value="{{ device.device_name }}" {% if device.device_name == device_name %}selected{% endif %}>
+                {{ device.device_name }}
+            </option>
+        {% endfor %}
+    </select>
+
+    <label for="from-date">From (Date & Time):</label>
+    <input type="datetime-local" id="from-date" name="from-date" required value="{{ from_date|date:'Y-m-d\TH:i' }}">
+
+    <label for="to-date">To (Date & Time):</label>
+    <input type="datetime-local" id="to-date" name="to-date" required value="{{ to_date|date:'Y-m-d\TH:i' }}">
+
+    <button type="submit" class="submit-button">Submit</button>
+    <button type="submit" name="export" value="excel" class="export-button">Export to Excel</button>
+</form>
+
+
+    <!-- Data Table Section -->
+    <div class="data-card-container">
+
+        <div class="date-range">
+            <p><strong>Device Name:</strong> {{ device_name }} | <strong>From:</strong> {{ from_date }} <strong>To:</strong> {{ to_date }}</p>
+        </div>
+
+
+        <div class="table-responsive">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>No.</th>
+                        <th>Date and Time</th>
+                        <th>Device Name</th>
+                        <th>Soil Temperature</th>
+                        <th>Soil Moisture</th>
+                        <th>Air Temperature</th>
+                        <th>Air Moisture</th>
+                        <th>Conductivity</th>
+                        <th>PH Value</th>
+                        <th>NPK</th>
+                        <th>Motor Status</th>  <!-- Comes from LEDControl -->
+                        <th>Overall Moisture</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for data in filtered_data %}
+                    <tr>
+                        <td>{{ forloop.counter }}</td>
+                        <td>{{ data.timestamp|date:"d-m-Y H:i:s" }}</td>
+                        <td>{{ data.device_name }}</td>
+                        <td>{{ data.temperature }}</td>
+                        <td>{{ data.moisture }}</td>
+                        <td>{{ data.air_temperature }}</td>
+                        <td>{{ data.air_humidity }}</td>
+                        <td>{{ data.conductivity }}</td>
+                        <td>{{ data.pH }}</td>
+                        <td>{{ data.npk }}</td>
+                        <td>{{ motor_status }}</td>  <!-- Display latest motor status -->
+                        <td>{{ data.overall_moisture }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+                
+            </table>
+        </div>
+
+        <!-- Pagination -->
+        <div class="pagination">
+            {% if page_obj.has_previous %}
+                <a href="?page=1&sensor-id={{ sensor_id }}&from-date={{ from_date }}&to-date={{ to_date }}" class="pagination-button first">&laquo; First</a>
+                <a href="?page={{ page_obj.previous_page_number }}" class="pagination-button previous">Previous</a>
+            {% endif %}
+
+            <span class="current">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
+
+            {% if page_obj.has_next %}
+                <a href="?page={{ page_obj.next_page_number }}" class="pagination-button next">Next</a>
+                <a href="?page={{ page_obj.paginator.num_pages }}" class="pagination-button last">Last &raquo;</a>
+            {% endif %}
+        </div>
+    </div>
+
+    {% if not filtered_data %}
+    <p class="no-data-message">No data available for the selected sensor ID and date range.</p>
+    {% endif %}
+</div>
+
+{% endblock %}

@@ -1,0 +1,150 @@
+{% extends 'members/manager/base.html' %}
+
+{% block manager_content %}
+<div class="card">
+    <div class="card-header">
+        <h5 class="card-title mb-0">Order History</h5>
+    </div>
+    <div class="card-body">
+        <!-- Filters -->
+        <div class="row mb-4">
+            <div class="col-md-3">
+                <label class="form-label">Date Range</label>
+                <select class="form-select" id="dateRange" value="{{ current_filters.date_range }}">
+                    <option value="7" {% if current_filters.date_range == '7' %}selected{% endif %}>Last 7 days</option>
+                    <option value="30" {% if current_filters.date_range == '30' %}selected{% endif %}>Last 30 days</option>
+                    <option value="90" {% if current_filters.date_range == '90' %}selected{% endif %}>Last 90 days</option>
+                    <option value="all" {% if current_filters.date_range == 'all' %}selected{% endif %}>All time</option>
+                </select>
+            </div>
+            <div class="col-md-3">
+                <label class="form-label">Status</label>
+                <select class="form-select" id="orderStatus" value="{{ current_filters.status }}">
+                    <option value="all" {% if current_filters.status == 'all' %}selected{% endif %}>All Status</option>
+                    <option value="completed" {% if current_filters.status == 'completed' %}selected{% endif %}>Completed</option>
+                    <option value="cancelled" {% if current_filters.status == 'cancelled' %}selected{% endif %}>Cancelled</option>
+                    <option value="pending" {% if current_filters.status == 'pending' %}selected{% endif %}>Pending</option>
+                </select>
+            </div>
+            <div class="col-md-3">
+                <label class="form-label">Sort By</label>
+                <select class="form-select" id="sortBy" value="{{ current_filters.sort }}">
+                    <option value="date_desc" {% if current_filters.sort == 'date_desc' %}selected{% endif %}>Date (Newest First)</option>
+                    <option value="date_asc" {% if current_filters.sort == 'date_asc' %}selected{% endif %}>Date (Oldest First)</option>
+                    <option value="amount_desc" {% if current_filters.sort == 'amount_desc' %}selected{% endif %}>Amount (High to Low)</option>
+                    <option value="amount_asc" {% if current_filters.sort == 'amount_asc' %}selected{% endif %}>Amount (Low to High)</option>
+                </select>
+            </div>
+            <div class="col-md-3">
+                <label class="form-label">&nbsp;</label>
+                <button class="btn btn-primary d-block w-100" id="applyFilters">Apply Filters</button>
+            </div>
+        </div>
+
+        <!-- Orders Table -->
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th>Order ID</th>
+                        <th>Customer</th>
+                        <th>Date</th>
+                        <th>Items</th>
+                        <th>Total Amount</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for order in orders %}
+                    <tr>
+                        <td>#{{ order.id }}</td>
+                        <td>{{ order.customer_name }}</td>
+                        <td>{{ order.order_date|date:"Y-m-d H:i" }}</td>
+                        <td>{{ order.items.count }} items</td>
+                        <td>${{ order.total_amount|floatformat:2 }}</td>
+                        <td>
+                            {% if order.status == 'completed' %}
+                                <span class="badge bg-success">Completed</span>
+                            {% elif order.status == 'cancelled' %}
+                                <span class="badge bg-danger">Cancelled</span>
+                            {% else %}
+                                <span class="badge bg-warning">Pending</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <a href="{% url 'view_order' order.id %}" class="btn btn-sm btn-info">View Details</a>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="7" class="text-center">No orders found</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Pagination -->
+        {% if orders.has_other_pages %}
+        <nav aria-label="Order history navigation" class="mt-3">
+            <ul class="pagination justify-content-center">
+                {% if orders.has_previous %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ orders.previous_page_number }}&date_range={{ current_filters.date_range }}&status={{ current_filters.status }}&sort={{ current_filters.sort }}">Previous</a>
+                    </li>
+                {% else %}
+                    <li class="page-item disabled">
+                        <span class="page-link">Previous</span>
+                    </li>
+                {% endif %}
+
+                {% for num in orders.paginator.page_range %}
+                    {% if orders.number == num %}
+                        <li class="page-item active">
+                            <span class="page-link">{{ num }}</span>
+                        </li>
+                    {% else %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ num }}&date_range={{ current_filters.date_range }}&status={{ current_filters.status }}&sort={{ current_filters.sort }}">{{ num }}</a>
+                        </li>
+                    {% endif %}
+                {% endfor %}
+
+                {% if orders.has_next %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ orders.next_page_number }}&date_range={{ current_filters.date_range }}&status={{ current_filters.status }}&sort={{ current_filters.sort }}">Next</a>
+                    </li>
+                {% else %}
+                    <li class="page-item disabled">
+                        <span class="page-link">Next</span>
+                    </li>
+                {% endif %}
+            </ul>
+        </nav>
+        {% endif %}
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const applyFiltersBtn = document.getElementById('applyFilters');
+    
+    applyFiltersBtn.addEventListener('click', function() {
+        const dateRange = document.getElementById('dateRange').value;
+        const status = document.getElementById('orderStatus').value;
+        const sortBy = document.getElementById('sortBy').value;
+        
+        // Build query string
+        const params = new URLSearchParams(window.location.search);
+        params.set('date_range', dateRange);
+        params.set('status', status);
+        params.set('sort', sortBy);
+        params.set('page', '1'); // Reset to first page when filtering
+        
+        // Redirect with filters
+        window.location.href = window.location.pathname + '?' + params.toString();
+    });
+});
+</script>
+{% endblock %} 

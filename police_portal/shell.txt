@@ -1,0 +1,22 @@
+
+# To delete evidence using the Django shell, follow these steps:
+# 1. Open the Django shell:
+#    ```bash
+   python manage.py shell
+#    ```
+
+# 2. Execute the following code to delete evidence:
+
+from system.models import Evidence
+
+# Delete all evidence
+Evidence.objects.all().delete()
+
+# OR delete specific evidence by filtering
+# Example: Delete evidence for a specific incident
+from system.models import Incident
+incident = Incident.objects.get(incident_id=1)  # Replace 1 with the desired incident_id
+Evidence.objects.filter(incident=incident).delete()
+
+# Example: Delete evidence by evidence_id
+Evidence.objects.filter(evidence_id=1).delete()  # Replace 1 with the desired evidence_id

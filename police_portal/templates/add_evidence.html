@@ -1,0 +1,29 @@
+{% extends 'base.html' %}
+
+{% block title %}Add Evidence{% endblock %}
+
+{% block content %}
+<h2 class="text-center">Add Evidence for Incident: {{ incident.title }}</h2>
+
+<!-- Display error messages -->
+{% if messages %}
+<div class="alert alert-danger">
+    <ul>
+        {% for message in messages %}
+        <li>{{ message }}</li>
+        {% endfor %}
+    </ul>
+</div>
+{% endif %}
+
+<form method="POST" enctype="multipart/form-data" class="mb-4">
+    {% csrf_token %}
+    <div class="mb-3">
+        <label for="evidence_file" class="form-label">Upload Evidence File:</label>
+        <input type="file" id="evidence_file" name="evidence_file" class="form-control" required>
+    </div>
+    <button type="submit" class="btn btn-primary">Upload Evidence</button>
+</form>
+
+<a href="{% url 'user_dashboard' %}" class="btn btn-secondary">Back to Dashboard</a>
+{% endblock %}

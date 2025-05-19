@@ -1,0 +1,366 @@
+{% extends 'members/manager/base.html' %}
+
+{% block extra_css %}
+<style>
+    .chart-container {
+        height: 300px;
+        width: 100%;
+        position: relative;
+    }
+</style>
+{% endblock %}
+
+{% block manager_content %}
+<div class="card">
+    <div class="card-header">
+        <h5 class="card-title mb-0">Sales Reports</h5>
+    </div>
+    <div class="card-body">
+        <!-- Date Range Filter -->
+        <form id="reportForm" method="get" action="{% url 'sales_reports' %}">
+            <div class="row mb-4">
+                <div class="col-md-4">
+                    <label class="form-label">Date Range</label>
+                    <select class="form-select" id="dateRange" name="date_range">
+                        <option value="today" {% if selected_date_range == "today" %}selected{% endif %}>Today</option>
+                        <option value="week" {% if selected_date_range == "week" %}selected{% endif %}>This Week</option>
+                        <option value="month" {% if selected_date_range == "month" or not selected_date_range %}selected{% endif %}>This Month</option>
+                        <option value="quarter" {% if selected_date_range == "quarter" %}selected{% endif %}>This Quarter</option>
+                        <option value="year" {% if selected_date_range == "year" %}selected{% endif %}>This Year</option>
+                        <option value="custom" {% if selected_date_range == "custom" %}selected{% endif %}>Custom Range</option>
+                    </select>
+                </div>
+                <div class="col-md-4" id="customDateRange" {% if selected_date_range != "custom" %}style="display: none;"{% endif %}>
+                    <div class="row">
+                        <div class="col-6">
+                            <label class="form-label">Start Date</label>
+                            <input type="date" class="form-control" id="startDate" name="start_date" value="{{ start_date|date:'Y-m-d' }}">
+                        </div>
+                        <div class="col-6">
+                            <label class="form-label">End Date</label>
+                            <input type="date" class="form-control" id="endDate" name="end_date" value="{{ end_date|date:'Y-m-d' }}">
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">&nbsp;</label>
+                    <button type="submit" class="btn btn-primary d-block w-100" id="generateReport">Generate Report</button>
+                </div>
+            </div>
+        </form>
+
+        <!-- Summary Cards -->
+        <div class="row mb-4">
+            <div class="col-md-3">
+                <div class="card bg-primary text-white">
+                    <div class="card-body">
+                        <h6 class="card-title">Total Sales</h6>
+                        <h3 class="mb-0">Rs. {{ total_sales|floatformat:2 }}</h3>
+                        <small>{{ sales_change|floatformat:1 }}% from previous period</small>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card bg-success text-white">
+                    <div class="card-body">
+                        <h6 class="card-title">Orders</h6>
+                        <h3 class="mb-0">{{ total_orders }}</h3>
+                        <small>{{ orders_change|floatformat:1 }}% from previous period</small>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card bg-info text-white">
+                    <div class="card-body">
+                        <h6 class="card-title">Average Order Value</h6>
+                        <h3 class="mb-0">Rs. {{ avg_order_value|floatformat:2 }}</h3>
+                        <small>{{ avg_value_change|floatformat:1 }}% from previous period</small>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card bg-warning text-white">
+                    <div class="card-body">
+                        <h6 class="card-title">Items Sold</h6>
+                        <h3 class="mb-0">{{ items_sold }}</h3>
+                        <small>{{ items_change|floatformat:1 }}% from previous period</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sales Trend Section -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0">Sales Trend</h5>
+            </div>
+            <div class="card-body">
+                <div class="chart-container">
+                    <canvas id="salesTrendChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sales Distribution Section -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0">Sales Distribution by Category</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-8">
+                        <div class="chart-container">
+                            <canvas id="categoryChart"></canvas>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="list-group" id="categoryDetails">
+                            {% for item in category_data_for_template %}
+                            <div class="list-group-item d-flex justify-content-between align-items-center">
+                                <div>
+                                    <h6 class="mb-0">{{ item.category }}</h6>
+                                    <small class="text-muted">Total Sales: Rs{{ item.revenue|floatformat:2 }}</small>
+                                </div>
+                                <span class="badge bg-primary rounded-pill">{{ item.units }} units</span>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Detailed Sales Table -->
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h6 class="card-title mb-0">Detailed Sales Report</h6>
+                <div class="btn-group">
+                    <a href="?{{ request.GET.urlencode }}&export=csv" class="btn btn-sm btn-outline-secondary">Export CSV</a>
+                    <button class="btn btn-sm btn-outline-secondary" onclick="window.print()">Print Report</button>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Order ID</th>
+                                <th>Customer</th>
+                                <th>Items</th>
+                                <th>Total</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for sale in detailed_sales %}
+                            <tr>
+                                <td>{{ sale.order_date|date:"Y-m-d" }}</td>
+                                <td>#{{ sale.id }}</td>
+                                <td>{{ sale.customer_name }}</td>
+                                <td>{{ sale.items.count }}</td>
+                                <td>Rs{{ sale.total_amount|floatformat:2 }}</td>
+                                <td>
+                                    {% if sale.status == 'completed' %}
+                                        <span class="badge bg-success">Completed</span>
+                                    {% elif sale.status == 'cancelled' %}
+                                        <span class="badge bg-danger">Cancelled</span>
+                                    {% else %}
+                                        <span class="badge bg-warning">Pending</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="6" class="text-center">No sales data available</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Pagination -->
+                {% if detailed_sales.has_other_pages %}
+                <nav aria-label="Sales navigation" class="mt-3">
+                    <ul class="pagination justify-content-center">
+                        {% if detailed_sales.has_previous %}
+                            <li class="page-item">
+                                <a class="page-link" href="?date_range={{ selected_date_range }}&page={{ detailed_sales.previous_page_number }}">Previous</a>
+                            </li>
+                        {% else %}
+                            <li class="page-item disabled">
+                                <span class="page-link">Previous</span>
+                            </li>
+                        {% endif %}
+
+                        {% for num in detailed_sales.paginator.page_range %}
+                            {% if detailed_sales.number == num %}
+                                <li class="page-item active">
+                                    <span class="page-link">{{ num }}</span>
+                                </li>
+                            {% else %}
+                                <li class="page-item">
+                                    <a class="page-link" href="?date_range={{ selected_date_range }}&page={{ num }}">{{ num }}</a>
+                                </li>
+                            {% endif %}
+                        {% endfor %}
+
+                        {% if detailed_sales.has_next %}
+                            <li class="page-item">
+                                <a class="page-link" href="?date_range={{ selected_date_range }}&page={{ detailed_sales.next_page_number }}">Next</a>
+                            </li>
+                        {% else %}
+                            <li class="page-item disabled">
+                                <span class="page-link">Next</span>
+                            </li>
+                        {% endif %}
+                    </ul>
+                </nav>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<!-- Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Handle custom date range visibility
+        const dateRange = document.getElementById('dateRange');
+        const customDateRange = document.getElementById('customDateRange');
+        
+        dateRange.addEventListener('change', function() {
+            customDateRange.style.display = this.value === 'custom' ? 'block' : 'none';
+        });
+
+        // Initialize charts
+        setTimeout(function() {
+            try {
+                createSalesTrendChart();
+                createCategoryChart();
+                console.log("Charts initialized successfully");
+            } catch (error) {
+                console.error("Error initializing charts:", error);
+            }
+        }, 100);
+        
+        // Function to create sales trend chart
+        function createSalesTrendChart() {
+            const chartLabels = {{ chart_labels|safe }};
+            const chartData = {{ chart_data|safe }};
+            
+            const ctx = document.getElementById('salesTrendChart').getContext('2d');
+            if (!ctx) {
+                console.error("Could not get sales trend chart context");
+                return;
+            }
+            
+            new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: chartLabels,
+                    datasets: [{
+                        label: 'Daily Sales',
+                        data: chartData,
+                        backgroundColor: 'rgba(54, 162, 235, 0.7)',
+                        borderColor: 'rgb(54, 162, 235)',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: 'Amount (Rs)'
+                            }
+                        },
+                        x: {
+                            title: {
+                                display: true,
+                                text: 'Date'
+                            }
+                        }
+                    },
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: 'Sales Trend Over Time'
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return `Sales: Rs${context.parsed.y.toFixed(2)}`;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+        
+        // Function to create category chart
+        function createCategoryChart() {
+            const categoryLabels = {{ category_labels|safe }};
+            const categoryData = {{ category_data|safe }};
+            
+            const ctx = document.getElementById('categoryChart').getContext('2d');
+            if (!ctx) {
+                console.error("Could not get category chart context");
+                return;
+            }
+            
+            new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: categoryLabels,
+                    datasets: [{
+                        label: 'Units Sold',
+                        data: categoryData,
+                        backgroundColor: 'rgba(54, 162, 235, 0.7)',
+                        borderColor: 'rgb(54, 162, 235)',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: 'Units'
+                            }
+                        },
+                        x: {
+                            title: {
+                                display: true,
+                                text: 'Categories'
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return `Units Sold: ${context.parsed.y}`;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+    });
+</script>
+{% endblock %} 

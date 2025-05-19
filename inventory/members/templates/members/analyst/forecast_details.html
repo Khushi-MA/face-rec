@@ -1,0 +1,225 @@
+<!-- {% extends 'members/analyst/base.html' %}
+
+{% block extra_css %}
+<style>
+    .forecast-details {
+        background-color: white;
+        padding: 20px;
+        border-radius: 8px;
+        box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        margin-bottom: 20px;
+    }
+    .metric-card {
+        background-color: #f8f9fa;
+        padding: 15px;
+        border-radius: 8px;
+        margin-bottom: 15px;
+    }
+    .metric-card h3 {
+        font-size: 1.5rem;
+        margin-bottom: 5px;
+    }
+    .metric-card p {
+        margin-bottom: 0;
+        color: #666;
+    }
+    .chart-container {
+        height: 400px;
+        margin-top: 20px;
+        margin-bottom: 20px;
+    }
+    .status-badge {
+        padding: 5px 10px;
+        border-radius: 15px;
+        font-size: 0.875rem;
+    }
+    .status-pending {
+        background-color: #ffd700;
+        color: #000;
+    }
+    .status-completed {
+        background-color: #28a745;
+        color: #fff;
+    }
+</style>
+{% endblock %}
+
+{% block analyst_content %}
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1>Forecast Details</h1>
+        <a href="{% url 'view_forecasts' %}" class="btn btn-outline-primary">Back to Forecasts</a>
+    </div>
+
+    <div class="row">
+        <div class="col-md-8">
+            <div class="forecast-details">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <div>
+                        <h5 class="mb-1">{{ forecast.product }}</h5>
+                        <p class="text-muted mb-0">{{ forecast.category }}</p>
+                    </div>
+                    <span class="status-badge {% if forecast.actual == 'Pending' %}status-pending{% else %}status-completed{% endif %}">
+                        {{ forecast.actual|default:"Pending" }}
+                    </span>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-3">
+                        <div class="metric-card">
+                            <h3>{{ forecast.forecasted }}</h3>
+                            <p>Forecasted Amount</p>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="metric-card">
+                            <h3>{{ forecast.actual }}</h3>
+                            <p>Actual Amount</p>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="metric-card">
+                            <h3>{{ forecast.accuracy }}%</h3>
+                            <p>Accuracy</p>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="metric-card">
+                            <h3>{{ forecast.variance }}%</h3>
+                            <p>Variance</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mt-4">
+                    <h5>Additional Information</h5>
+                    <table class="table">
+                        <tbody>
+                            <tr>
+                                <th>Forecast Date</th>
+                                <td>{{ forecast.date }}</td>
+                            </tr>
+                            <tr>
+                                <th>Category</th>
+                                <td>{{ forecast.category }}</td>
+                            </tr>
+                            <tr>
+                                <th>Product</th>
+                                <td>{{ forecast.product }}</td>
+                            </tr>
+                            <tr>
+                                <th>Status</th>
+                                <td>
+                                    <span class="status-badge {% if forecast.actual == 'Pending' %}status-pending{% else %}status-completed{% endif %}">
+                                        {{ forecast.actual|default:"Pending" }}
+                                    </span>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="forecast-details">
+                <h5>Forecast Analysis</h5>
+                <div class="chart-container">
+                    <canvas id="accuracyChart"></canvas>
+                </div>
+                <div class="mt-4">
+                    <h6>Key Insights</h6>
+                    <ul class="list-unstyled">
+                        <li class="mb-2">✓ Forecast is {% if forecast.accuracy >= 90 %}highly accurate{% elif forecast.accuracy >= 70 %}moderately accurate{% else %}needs improvement{% endif %}</li>
+                        <li class="mb-2">✓ Variance is {% if forecast.variance <= 10 %}within acceptable range{% else %}above threshold{% endif %}</li>
+                        <li class="mb-2">✓ Based on historical data patterns</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="forecast-details mt-4">
+        <h5>SVM Revenue Sales Prediction</h5>
+        <div class="chart-container">
+            <canvas id="svmPredictionChart"></canvas>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Store forecast data in JS variables (no red lines)
+    const accuracy = {{ forecast.accuracy|default:0|floatformat:"2" }};
+    const variance = {{ forecast.variance|default:0|floatformat:"2" }};
+
+    const ctxAccuracy = document.getElementById('accuracyChart').getContext('2d');
+    new Chart(ctxAccuracy, {
+        type: 'doughnut',
+        data: {
+            labels: ['Accurate', 'Variance'],
+            datasets: [{
+                data: [accuracy, variance],
+                backgroundColor: [
+                    'rgba(75, 192, 192, 0.8)',
+                    'rgba(255, 99, 132, 0.8)'
+                ],
+                borderColor: [
+                    'rgba(75, 192, 192, 1)',
+                    'rgba(255, 99, 132, 1)'
+                ],
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { position: 'bottom' },
+                title: { display: true, text: 'Accuracy vs Variance' }
+            }
+        }
+    });
+
+    // SVM Prediction Chart
+    const svmData = JSON.parse('{{ svm_chart_data|escapejs }}');
+    const ctxSVM = document.getElementById('svmPredictionChart').getContext('2d');
+    new Chart(ctxSVM, {
+        type: 'line',
+        data: {
+            labels: svmData.labels,
+            datasets: [{
+                label: 'Predicted Sales',
+                data: svmData.values,
+                borderColor: 'rgba(54, 162, 235, 1)',
+                backgroundColor: 'rgba(54, 162, 235, 0.2)',
+                fill: true,
+                tension: 0.4
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: { position: 'top' },
+                title: { display: true, text: 'SVM Revenue Sales Forecast' }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    title: { display: true, text: 'Sales Amount' }
+                },
+                x: {
+                    title: { display: true, text: 'Time' }
+                }
+            }
+        }
+    });
+});
+</script>
+{% endblock %}
+ -->

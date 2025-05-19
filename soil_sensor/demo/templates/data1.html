@@ -1,0 +1,934 @@
+{% extends 'common_links.html' %}
+{% block content %}
+
+<!-- Existing styles unchanged -->
+<style>
+    body {
+      
+        min-height: 100vh;
+        position: relative;
+        overflow-x: hidden;
+        font-family: 'Arial', sans-serif;
+    }
+
+    .main-container {
+        display: flex;
+        justify-content: space-between;
+        padding: 20px;
+        border-radius: 10px;
+        gap: 20px;
+        max-width: 1400px;
+        margin: 0 auto;
+    }
+
+    .left-part {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+    }
+
+    .gauge-container {
+        display: flex;
+        justify-content: flex-start;
+        gap: 20px;
+        border-radius: 10px;
+        flex-wrap: wrap;
+    }
+
+    .gauge-box {
+        width: 270px;
+        height: 280px;
+        background-color: rgb(24, 48, 36);
+        border-radius: 10px;
+        padding: 20px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        animation: fadeIn 1s ease-out;
+    }
+
+    .gauge-box:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 16px rgba(0, 0, 0, 0.6);
+    }
+
+    h2 {
+        margin-bottom: 20px;
+        color: white;
+        font-size: 20px;
+        font-weight: 600;
+        text-align: center;
+        animation: fadeInDown 0.8s ease-out;
+    }
+
+    .sc-gauge {
+        width: 200px;
+        height: 200px;
+        margin: 20px auto;
+        position: relative;
+    }
+
+    .sc-background {
+        position: relative;
+        height: 100px;
+        margin-bottom: 10px;
+        background-color: #fff;
+        border-radius: 150px 150px 0 0;
+        overflow: hidden;
+        text-align: center;
+    }
+
+    .sc-mask {
+        position: absolute;
+        top: 20px;
+        right: 20px;
+        left: 20px;
+        height: 80px;
+        background-color: rgb(250, 111, 47);
+        border-radius: 150px 150px 0 0;
+    }
+
+    .sc-percentage {
+        position: absolute;
+        top: 100px;
+        left: -200%;
+        width: 400%;
+        height: 400%;
+        margin-left: 100px;
+        background-color: #00aeef;
+        transform-origin: top center;
+    }
+
+    .sc-min, .sc-max {
+        color: white;
+        font-size: 14px;
+        font-weight: 500;
+    }
+
+    .sc-min { float: left; }
+    .sc-max { float: right; }
+
+    .sc-value {
+        position: absolute;
+        top: 50%;
+        left: 0;
+        width: 100%;
+        font-size: 16px;
+        font-weight: 500;
+        color: #fff;
+    }
+
+    .card-container {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 20px;
+        justify-content: center;
+        align-items: flex-start;
+        margin-top: 20px;
+    }
+
+    .card-box {
+        width: 270px;
+        height: 80px;
+        border-radius: 10px;
+        padding: 10px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        background-color: rgb(24, 48, 36);
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);
+        box-sizing: border-box;
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        animation: fadeInUp 0.8s ease-out;
+    }
+
+    .card-box:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 16px rgba(0, 0, 0, 0.6);
+    }
+
+    .card-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin: 0;
+    }
+
+    .card-table th, .card-table td {
+        padding: 8px;
+        text-align: center;
+        border: none;
+        color: white;
+        font-size: 16px;
+    }
+
+    .card-table th {
+        font-weight: 600;
+    }
+
+    .card-table td {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+    }
+
+    .card-table td i {
+        font-size: 18px;
+        color: #22c1c3;
+        animation: bounceIn 0.6s ease-out;
+    }
+
+    .card-table thead tr {
+        border-bottom: 1px solid #555;
+    }
+
+    .card-table td:last-child, .card-table th:last-child {
+        border-right: none;
+    }
+
+    .card-table tr:last-child td {
+        border-bottom: none;
+    }
+
+    .right-part {
+        flex: 3;
+        background-color: transparent;
+        padding: 20px;
+        border-radius: 10px;
+        padding-top: 0;
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+        align-items: center;
+    }
+
+    #temperatureChart, #moistureChart, #environmentPieChart {
+        width: 620px;
+        height: 250px;
+        background-color: rgb(24, 48, 36);
+        border-radius: 10px;
+        padding: 15px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);
+        animation: fadeIn 1s ease-out;
+    }
+
+    .chartjs-render-monitor {
+        color: #fff;
+        font-weight: 200;
+    }
+
+    .chartjs-render-monitor .grid-line,
+    .chartjs-render-monitor .tick-mark {
+        color: white;
+    }
+
+    .chartjs-render-monitor .label {
+        font-size: 12px;
+        color: white;
+    }
+
+    .chartjs-tooltip {
+        background-color: white;
+        color: #333;
+        border-radius: 5px;
+        padding: 10px;
+        font-size: 12px;
+        font-weight: bold;
+    }
+
+    .d-card-container {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 18px;
+    }
+
+    .d-card-box {
+        width: 560px;
+        height: 50px;
+        background-color: rgb(24, 48, 36);
+        border-radius: 10px;
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        justify-content: space-between;
+        color: #fff;
+        overflow: hidden;
+        border: none;
+        box-shadow: 0 4px 8px rgba(36, 32, 32, 0.22);
+        box-sizing: border-box;
+        padding: 0 25px;
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        animation: fadeIn 0.8s ease-out;
+    }
+    
+
+    .d-card-box:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 6px 12px rgba(36, 32, 32, 0.3);
+    }
+    
+
+    .d-card-box div {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    /* Animations */
+    @keyframes fadeIn {
+        from { opacity: 0; }
+        to { opacity: 1; }
+    }
+
+    @keyframes fadeInDown {
+        from { opacity: 0; transform: translateY(-20px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes fadeInUp {
+        from { opacity: 0; transform: translateY(20px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes bounceIn {
+        0% { transform: scale(0.3); opacity: 0; }
+        50% { transform: scale(1.05); opacity: 1; }
+        100% { transform: scale(1); opacity: 1; }
+    }
+
+    @media (max-width: 768px) {
+    .main-container {
+        flex-direction: column;
+        padding: 10px;
+        gap: 10px;
+    }
+
+    .left-part, .right-part {
+        width: 100%;
+        padding: 10px;
+    }
+
+    /* Gauge Container Adjustments */
+    .gauge-container {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: space-between;
+        gap: 10px;
+    }
+
+    .gauge-box {
+        width: calc(50% - 5px); /* Two per row with gap */
+        max-width: none;
+        height: 260px;
+        margin: 0;
+    }
+
+    .sc-gauge {
+        width: 140px;
+        height: 140px;
+    }
+
+    .sc-value {
+        font-size: 12px;
+    }
+
+    h2 {
+        font-size: 13px;
+        margin-bottom: 10px;
+    }
+
+    /* Existing Card Container */
+    .card-container {
+        gap: 10px;
+    }
+
+    .card-box {
+        width: calc(50% - 5px); /* Two per row with gap */
+        max-width: none;
+        height: 70px;
+    }
+
+    .card-table th, .card-table td {
+        font-size: 14px;
+        padding: 6px;
+    }
+
+    .card-table td i {
+        font-size: 16px;
+    }
+
+    /* Device Info Card */
+    .d-card-container {
+        gap: 10px;
+    }
+
+    .d-card-box {
+        width: 100%;
+        max-width: none;
+        height: 40px;
+        padding: 0 15px;
+        font-size: 14px;
+    }
+
+    .d-card-box i {
+        font-size: 14px;
+    }
+
+    /* Chart Adjustments */
+    .right-part {
+        padding: 10px;
+    }
+
+    .right-part .d-card-container {
+        flex-direction: column;
+    }
+
+    #temperatureChart, #moistureChart, #environmentPieChart {
+        width: 100%;
+        max-width: none;
+        height: 200px;
+        padding: 10px;
+    }
+
+    /* Single chart container */
+    .right-part .d-card-container > div {
+        width: 100%;
+    }
+
+    .chartjs-render-monitor .label {
+        font-size: 10px;
+    }
+}
+
+.fa-cogs {
+  color: gray;
+  font-size: 20px;
+}
+
+.fa-vial {
+  color: rgb(91, 245, 91);
+  font-size: 20px;
+}
+
+.fa-bolt {
+  color: orange;
+  font-size: 20px;
+}
+</style>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+
+<div class="main-container">
+    <div class="left-part">
+        <div class="d-card-container">
+            <div class="d-card-box">
+                <div><i class="fas fa-clock"></i> <p id="date-time">DD-MM-YYYY 00:00:00</p></div>
+                <div><i class="fas fa-plug"></i> <p id="connection"></p></div>
+                <div><i class="fas fa-microchip"></i> <p id="deviceName"></p></div>
+            </div>
+        </div>
+        <div class="gauge-container">
+            <!-- Temperature Gauge Box -->
+            <div class="gauge-box">
+                <h2><i class="fas fa-temperature-high"></i> Soil Temperature</h2>
+                <div class="sc-gauge">
+                    <div class="sc-background">
+                        <div class="sc-percentage" id="temperaturePercentage"></div>
+                        <div class="sc-mask"></div>
+                        <span class="sc-value" id="temperatureValue"></span>
+                    </div>
+                    <span class="sc-min">0</span>
+                    <span class="sc-max">100</span>
+                </div>
+            </div>
+
+            <!-- Moisture Gauge Box -->
+            <div class="gauge-box">
+                <h2><i class="fas fa-tint"></i> Soil Moisture</h2>
+                <div class="sc-gauge">
+                    <div class="sc-background">
+                        <div class="sc-percentage" id="moisturePercentage"></div>
+                        <div class="sc-mask"></div>
+                        <span class="sc-value" id="moistureValue"></span>
+                    </div>
+                    <span class="sc-min">0</span>
+                    <span class="sc-max">100</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Card Container -->
+        <div class="card-container">
+            
+
+            <div class="card-box">
+                <table class="card-table">
+                    <thead>
+                        <tr>
+                            <th><i class="fas fa-bolt"></i> Conductivity</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td> <span id="conductivity">-</span></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="card-box">
+                <table class="card-table">
+                    <thead>
+                        <tr>
+                            <th><i class="fas fa-vial"></i> pH Value</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><span id="pH"> - </span></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="card-box">
+                <table class="card-table">
+                    <thead>
+                        <tr>
+                            <th><i class="fas fa-cogs"></i> Motor Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>{{ motor_status.relay_status }}</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="card-box">
+                <table class="card-table">
+                    <thead>
+                        <tr>
+                            <th><i class="icon-plant"></i>  Overall Moisture</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><span id="overall_moisture"> - </span></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div class="right-part">
+        <div class="d-card-container">
+            <div><canvas id="temperatureChart"></canvas></div>
+            <div><canvas id="moistureChart"></canvas></div>
+            <div><canvas id="environmentPieChart"></canvas></div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+<script>
+    let currentSensorId = 1;
+let dataFetchInterval = null;
+let hasShownAlert = false;
+let deviceName = "{{ device_name|default:'MyDevice' }}"; // Get from template or default to 'MyDevice'
+
+function startFetchingData() {
+    if (dataFetchInterval) {
+        clearInterval(dataFetchInterval);
+    }
+    fetchLatestData();
+    dataFetchInterval = setInterval(() => {
+        fetchLatestData();
+    }, 5000);
+}
+
+startFetchingData();
+
+var previousTimestamp = null;
+var unchangedTimestampStart = null;
+
+function fetchLatestData() {
+    const url = `/fetch_latest_data/?device_name=${encodeURIComponent(deviceName)}&sensor_id=${currentSensorId}`;
+    fetch(url)
+        .then(response => {
+            if (!response.ok) {
+                return response.json().then(err => { throw new Error(err.error || 'Request failed'); });
+            }
+            return response.json();
+        })
+        .then(data => {
+            if (data.latest_entry) {
+                var latestTimestamp = new Date(data.latest_entry.timestamp).getTime();
+                if (previousTimestamp === latestTimestamp) {
+                    if (!unchangedTimestampStart) {
+                        unchangedTimestampStart = Date.now();
+                    } else if (Date.now() - unchangedTimestampStart > 60000) {
+                        resetValuesToZero();
+                        Swal.fire({
+                            title: 'No New Data',
+                            text: 'Data has not updated for over a minute.',
+                            icon: 'warning',
+                            confirmButtonText: 'OK'
+                        });
+                        return;
+                    }
+                } else {
+                    unchangedTimestampStart = null;
+                }
+                previousTimestamp = latestTimestamp;
+                updateUIWithData(data.latest_entry);
+            } else {
+                resetValuesToZero();
+                Swal.fire({
+                    title: 'No Data',
+                    text: data.error || 'No data available for this device.',
+                    icon: 'info',
+                    confirmButtonText: 'OK'
+                });
+            }
+        })
+        .catch(error => {
+            console.error("Error fetching latest data:", error);
+            resetValuesToZero();
+            Swal.fire({
+                title: 'Error',
+                text: error.message || 'Failed to fetch data.',
+                icon: 'error',
+                confirmButtonText: 'OK'
+            });
+        });
+}
+
+function updateUIWithData(entry) {
+    var temperature = entry.temperature;
+    var maxTemperature = 100;
+    var temperaturePercentage = (temperature / maxTemperature) * 180;
+    document.getElementById('temperaturePercentage').style.transform = 'rotate(' + temperaturePercentage + 'deg)';
+    document.getElementById('temperatureValue').textContent = `${temperature}°C`;
+    var moisture = entry.moisture;
+    var maxmoisture = 100;
+    var moisturePercentage = (moisture / maxmoisture) * 180;
+    document.getElementById('moisturePercentage').style.transform = 'rotate(' + moisturePercentage + 'deg)';
+    document.getElementById('moistureValue').textContent = `${moisture}%`;
+    document.getElementById('conductivity').textContent = entry.conductivity;
+    document.getElementById('pH').textContent = entry.pH;
+    document.getElementById('deviceName').textContent = entry.device_name;
+    document.getElementById('connection').textContent = entry.status;
+    document.getElementById('connection').style.color = 'green';
+    document.getElementById('overall_moisture').textContent = entry.overall_moisture;
+
+    // Check for overall moisture reaching 100
+    if (entry.overall_moisture >= 100 && !hasShownAlert) {
+        Swal.fire({
+            title: 'Soil is Completely Wet!',
+            text: 'Please turn off the motor.',
+            icon: 'warning',
+            showCancelButton: false,
+            confirmButtonText: 'Go to Motor Status',
+            customClass: {
+                confirmButton: 'btn btn-primary btn-custom'
+            }
+        }).then((result) => {
+            if (result.isConfirmed) {
+                window.location.href = "{% url 'view_plots' %}";
+            }
+        });
+        hasShownAlert = true;
+    } else if (entry.overall_moisture < 100) {
+        hasShownAlert = false;
+    }
+
+    updateCharts(entry); // Consolidated chart updates
+}
+
+function resetValuesToZero() {
+    document.getElementById('temperaturePercentage').style.transform = 'rotate(0deg)';
+    document.getElementById('temperatureValue').textContent = `0°C`;
+    document.getElementById('moisturePercentage').style.transform = 'rotate(0deg)';
+    document.getElementById('moistureValue').textContent = `0%`;
+    document.getElementById('deviceName').textContent = "-";
+    document.getElementById('conductivity').textContent = "-";
+    document.getElementById('pH').textContent = "-";
+    document.getElementById('connection').textContent = `Offline`;
+    document.getElementById('connection').style.color = 'red';
+    document.getElementById('overall_moisture').textContent = '-';
+    environmentPieChart.data.datasets[0].data = [0, 0];
+    environmentPieChart.update();
+    if (dataFetchInterval) {
+        clearInterval(dataFetchInterval);
+        dataFetchInterval = null;
+        console.log("Fetch interval cleared.");
+    }
+    hasShownAlert = false;
+}
+
+function updateCharts(entry) {
+    const timestamp = new Date(entry.timestamp);
+    // No need to adjust timestamp if backend already provides IST
+    const temperature = entry.temperature;
+    const moisture = entry.moisture;
+
+    // Update Temperature Chart
+    if (temperatureChart.data.labels.length === 0 ||
+        temperatureChart.data.labels[temperatureChart.data.labels.length - 1].getTime() !== timestamp.getTime()) {
+        temperatureChart.data.labels.push(timestamp);
+        temperatureChart.data.datasets[0].data.push(temperature);
+
+        if (temperatureChart.data.labels.length > 10) {
+            temperatureChart.data.labels.shift();
+            temperatureChart.data.datasets[0].data.shift();
+        }
+        temperatureChart.update();
+    }
+
+    // Update Moisture Chart
+    if (moistureChart.data.labels.length === 0 ||
+        moistureChart.data.labels[moistureChart.data.labels.length - 1].getTime() !== timestamp.getTime()) {
+        moistureChart.data.labels.push(timestamp);
+        moistureChart.data.datasets[0].data.push(moisture);
+
+        if (moistureChart.data.labels.length > 10) {
+            moistureChart.data.labels.shift();
+            moistureChart.data.datasets[0].data.shift();
+        }
+        moistureChart.update();
+    }
+
+    // Update Pie Chart
+    environmentPieChart.data.datasets[0].data = [temperature, moisture];
+    environmentPieChart.update();
+}
+
+var ctxTemperature = document.getElementById('temperatureChart').getContext('2d');
+var temperatureChart = new Chart(ctxTemperature, {
+    type: 'line',
+    data: {
+        labels: [],
+        datasets: [{
+            label: 'Temperature (°C)',
+            data: [],
+            borderColor: 'rgba(75, 192, 192, 1)',
+            backgroundColor: 'rgba(75, 192, 192, 0.2)',
+            borderWidth: 2,
+            fill: true,
+            tension: 0.4,
+            pointRadius: 3,
+            pointBackgroundColor: 'rgba(75, 192, 192, 1)',
+        }]
+    },
+    options: {
+        scales: {
+            x: {
+                type: 'time',
+                time: {
+                    unit: 'minute',
+                    tooltipFormat: 'Pp',
+                    displayFormats: {
+                        minute: 'HH:mm',
+                        hour: 'HH:mm',
+                        day: 'MMM d',
+                    }
+                },
+                title: {
+                    display: true,
+                    text: 'Time (IST)',
+                    color: '#fff'
+                },
+                ticks: {
+                    maxTicksLimit: 10,
+                    color: '#ddd',
+                },
+                grid: {
+                    color: '#666',
+                }
+            },
+            y: {
+                title: {
+                    display: true,
+                    text: 'Temperature (°C)',
+                    color: '#fff'
+                },
+                ticks: {
+                    maxTicksLimit: 10,
+                    color: '#ddd',
+                },
+                grid: {
+                    color: '#666',
+                }
+            }
+        },
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+            legend: {
+                labels: {
+                    color: '#fff'
+                }
+            },
+            tooltip: {
+                backgroundColor: '#333',
+                titleColor: '#fff',
+                bodyColor: '#fff'
+            }
+        }
+    }
+});
+
+var ctxMoisture = document.getElementById('moistureChart').getContext('2d');
+var moistureChart = new Chart(ctxMoisture, {
+    type: 'line',
+    data: {
+        labels: [],
+        datasets: [{
+            label: 'Moisture (%RH)',
+            data: [],
+            borderColor: 'rgba(54, 162, 235, 1)',
+            backgroundColor: 'rgba(54, 162, 235, 0.2)',
+            borderWidth: 2,
+            fill: true,
+            tension: 0.4,
+            pointRadius: 3,
+            pointBackgroundColor: 'rgba(54, 162, 235, 1)',
+        }]
+    },
+    options: {
+        scales: {
+            x: {
+                type: 'time',
+                time: {
+                    unit: 'minute',
+                    tooltipFormat: 'Pp',
+                    displayFormats: {
+                        minute: 'HH:mm',
+                        hour: 'HH:mm',
+                        day: 'MMM d',
+                    }
+                },
+                title: {
+                    display: true,
+                    text: 'Time (IST)',
+                    color: '#fff'
+                },
+                ticks: {
+                    maxTicksLimit: 10,
+                    color: '#ddd',
+                },
+                grid: {
+                    color: '#666',
+                }
+            },
+            y: {
+                title: {
+                    display: true,
+                    text: 'Moisture (%RH)',
+                    color: '#fff'
+                },
+                ticks: {
+                    maxTicksLimit: 10,
+                    color: '#ddd',
+                },
+                grid: {
+                    color: '#666',
+                }
+            }
+        },
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+            legend: {
+                labels: {
+                    color: '#fff'
+                }
+            },
+            tooltip: {
+                backgroundColor: '#333',
+                titleColor: '#fff',
+                bodyColor: '#fff'
+            }
+        }
+    }
+});
+
+var ctxPie = document.getElementById('environmentPieChart').getContext('2d');
+var environmentPieChart = new Chart(ctxPie, {
+    type: 'pie',
+    data: {
+        labels: ['Temperature (°C)', 'Moisture (%)'],
+        datasets: [{
+            data: [0, 0],
+            backgroundColor: [
+                'rgba(75, 192, 192, 0.8)',
+                'rgba(54, 162, 235, 0.8)'
+            ],
+            borderColor: [
+                'rgba(75, 192, 192, 1)',
+                'rgba(54, 162, 235, 1)'
+            ],
+            borderWidth: 1
+        }]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+            legend: {
+                position: 'top',
+                labels: {
+                    color: '#fff',
+                    font: {
+                        size: 12
+                    }
+                }
+            },
+            tooltip: {
+                backgroundColor: '#333',
+                titleColor: '#fff',
+                bodyColor: '#fff',
+                callbacks: {
+                    label: function(context) {
+                        let label = context.label || '';
+                        let value = context.raw || 0;
+                        return `${label}: ${value}`;
+                    }
+                }
+            }
+        }
+    }
+});
+
+// Remove duplicate fetchInterval
+// let fetchInterval = setInterval(fetchLatestData, 5000); // Removed
+
+function updateDateTime() {
+    const now = new Date();
+    const formattedDateTime = now.toLocaleString('en-GB', {
+        day: '2-digit',
+        month: '2-digit',
+        year: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit'
+    }).replace(',', '');
+    document.getElementById('date-time').innerText = formattedDateTime;
+}
+setInterval(updateDateTime, 1000);
+updateDateTime();
+</script>
+
+
+{% endblock %}

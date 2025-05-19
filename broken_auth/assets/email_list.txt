@@ -1,0 +1,12 @@
+admin@gmail.com
+user1@gmail.com
+user2@gmail.com
+test@gmail.com
+demo@gmail.com
+dummy@gmail.com
+admin@example.com
+user1@example.com
+user2@example.com
+test@example.com
+demo@example.com
+dummy@example.com

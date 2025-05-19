@@ -1,0 +1,141 @@
+{% extends 'admin1/base.html' %}
+{% block content %}
+
+<style>
+
+
+  h2 {
+      text-align: center;
+      color: #333;
+  }
+
+  label {
+      font-weight: bold;
+      display: block;
+      margin-top: 10px;
+  }
+
+  input, select, textarea {
+      width: 100%;
+      padding: 8px;
+      margin-top: 5px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+  }
+
+  button {
+      margin-top: 20px;
+      width: 100%;
+      background-color: #28a745;
+      color: white;
+      border: none;
+      padding: 10px;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 16px;
+  }
+
+  button:hover {
+      background-color: #218838;
+  }
+</style>
+
+<div class="container">
+    <h2>Update Crop</h2>
+    <form method="POST" enctype="multipart/form-data">
+      {% csrf_token %}
+
+      <label>Name:</label>
+      <input type="text" name="name" value="{{ crop.name }}" required>
+
+      <label>Scientific Name:</label>
+      <input type="text" name="scientific_name" value="{{ crop.scientific_name }}">
+
+      <label>Crop Type:</label>
+      <select name="crop_type">
+          <option value="Cereal" {% if crop.crop_type == "Cereal" %}selected{% endif %}>Cereal</option>
+          <option value="Pulse" {% if crop.crop_type == "Pulse" %}selected{% endif %}>Pulse</option>
+          <option value="Vegetable" {% if crop.crop_type == "Vegetable" %}selected{% endif %}>Vegetable</option>
+          <option value="Fruit" {% if crop.crop_type == "Fruit" %}selected{% endif %}>Fruit</option>
+      </select>
+
+      <label>General Information:</label>
+      <textarea name="general_information" required>{{ crop.general_information }}</textarea>
+
+      <label>Season:</label>
+      <input type="text" name="season" value="{{ crop.season }}" required>
+
+      <label>Growth Duration:</label>
+      <input type="text" name="growth_duration" value="{{ crop.growth_duration }}" required>
+
+      <label>Soil Type:</label>
+      <textarea name="soil" required>{{ crop.soil }}</textarea>
+
+      <label>pH Level:</label>
+      <input type="text" name="ph_level" value="{{ crop.ph_level }}" required>
+
+      <label>Temperature Range:</label>
+      <input type="text" name="temperature" value="{{ crop.temperature }}" required>
+
+      <label>Rainfall Requirement:</label>
+      <input type="text" name="rainfall" value="{{ crop.rainfall }}" required>
+
+      <label>Sowing Temperature:</label>
+      <input type="text" name="sowing_temperature" value="{{ crop.sowing_temperature }}" required>
+
+      <label>Harvesting Temperature:</label>
+      <input type="text" name="harvesting_temperature" value="{{ crop.harvesting_temperature }}" required>
+
+      <label>Land Preparation:</label>
+      <textarea name="land_preparation" required>{{ crop.land_preparation }}</textarea>
+
+      <label>Time of Sowing:</label>
+      <input type="text" name="time_of_sowing" value="{{ crop.time_of_sowing }}" required>
+
+      <label>Spacing:</label>
+      <textarea name="spacing" required>{{ crop.spacing }}</textarea>
+
+      <label>Method of Sowing:</label>
+      <input type="text" name="method_of_sowing" value="{{ crop.method_of_sowing }}" required>
+
+      <label>Sowing Depth:</label>
+      <input type="text" name="sowing_depth" value="{{ crop.sowing_depth }}" required>
+
+      <label>Seed Rate:</label>
+      <input type="text" name="seed_rate" value="{{ crop.seed_rate }}" required>
+
+      <label>Seed Treatment:</label>
+      <textarea name="seed_treatment" required>{{ crop.seed_treatment }}</textarea>
+
+      <label>Weed Control:</label>
+      <textarea name="weed_control">{{ crop.weed_control }}</textarea>
+
+      <label>Irrigation Requirement:</label>
+      <textarea name="irrigation" required>{{ crop.irrigation }}</textarea>
+
+      <label>Insecticide Name:</label>
+      <input type="text" name="insecticide_name" value="{{ crop.insecticide_name }}">
+
+      <label>Quantity:</label>
+      <input type="text" name="quantity" value="{{ crop.quantity }}">
+
+      <label>Harvesting Time:</label>
+      <input type="text" name="harvesting_time" value="{{ crop.harvesting_time }}" required>
+
+      <label>Yield Per Hectare:</label>
+      <input type="text" name="yield_per_hectare" value="{{ crop.yield_per_hectare }}" required>
+
+      <label>Post Harvest Handling:</label>
+      <textarea name="post_harvest_handling">{{ crop.post_harvest_handling }}</textarea>
+
+      <label>Image:</label>
+      <input type="file" name="image">
+      {% if crop.image %}
+        <p>Current Image: <img src="{{ crop.image.url }}" alt="{{ crop.name }}" style="max-width: 100px; margin-top: 5px;"></p>
+      {% endif %}
+
+      <button type="submit">Update Crop</button>
+    </form>
+</div>
+
+{% endblock %}

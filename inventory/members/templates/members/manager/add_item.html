@@ -1,0 +1,92 @@
+{% extends 'members/manager/base.html' %}
+
+{% block manager_content %}
+<div class="card">
+    <div class="card-header">
+        <h5 class="card-title mb-0">Add New Item</h5>
+    </div>
+    <div class="card-body">
+        <form method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label for="product_name" class="form-label">Product Name</label>
+                    <input type="text" class="form-control" id="product_name" name="product_name" required>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label for="category" class="form-label">Category</label>
+                    <select class="form-select" id="category" name="category" required>
+                        <option value="">Select Category</option>
+                        <option value="Electronics">Electronics</option>
+                        <option value="Clothing">Clothing</option>
+                        <option value="Food">Food Items</option>
+                        <option value="Other">Other</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-4 mb-3">
+                    <label for="quantity" class="form-label">Initial Quantity</label>
+                    <input type="number" class="form-control" id="quantity" name="quantity" min="0" required>
+                </div>
+                <div class="col-md-4 mb-3">
+                    <label for="price" class="form-label">Unit Price</label>
+                    <div class="input-group">
+                        <span class="input-group-text">Rs</span>
+                        <input type="number" class="form-control" id="price" name="price" step="0.01" min="0" required>
+                    </div>
+                </div>
+                <div class="col-md-4 mb-3">
+                    <label for="reorder_level" class="form-label">Reorder Level</label>
+                    <input type="number" class="form-control" id="reorder_level" name="reorder_level" min="0" required>
+                </div>
+            </div>
+
+            <div class="mb-3">
+                <label for="description" class="form-label">Description</label>
+                <textarea class="form-control" id="description" name="description" rows="3"></textarea>
+            </div>
+
+            <div class="mb-3">
+                <label for="product_image" class="form-label">Product Image</label>
+                <input type="file" class="form-control" id="product_image" name="product_image" accept="image/*">
+            </div>
+
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label for="supplier" class="form-label">Supplier</label>
+                    <input type="text" class="form-control" id="supplier" name="supplier">
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label for="sku" class="form-label">SKU</label>
+                    <input type="text" class="form-control" id="sku" name="sku">
+                </div>
+            </div>
+
+            <div class="mb-3">
+                <div class="form-check">
+                    <input type="checkbox" class="form-check-input" id="active" name="active" checked>
+                    <label class="form-check-label" for="active">Active Item</label>
+                </div>
+            </div>
+
+            <div class="text-end">
+                <a href="{% url 'view_inventory' %}" class="btn btn-secondary">Cancel</a>
+                <button type="submit" class="btn btn-primary">Add Item</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+{% if messages %}
+<div class="mt-3">
+    {% for message in messages %}
+    <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+        {{ message }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+    {% endfor %}
+</div>
+{% endif %}
+{% endblock %} 

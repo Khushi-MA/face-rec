@@ -1,0 +1,378 @@
+{% extends 'members/base_landing.html' %}
+{% load static %}
+
+{% block content %}
+<style>
+    :root {
+        --bg-light: #f8f9fa;
+        --primary-color: #4a90e2;
+        --secondary-color: #50c878;
+        --text-dark: #2c3e50;
+        --card-bg: #ffffff;
+        --success-color: #2ecc71;
+        --warning-color: #f39c12;
+        --danger-color: #e74c3c;
+        --border-color: #e0e0e0;
+    }
+
+    body {
+        background: var(--bg-light);
+        color: var(--text-dark);
+        font-family: 'Poppins', sans-serif;
+        min-height: 100vh;
+    }
+
+    .neon-grid {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-image: 
+            linear-gradient(transparent 95%, rgba(0, 255, 242, 0.1) 95%),
+            linear-gradient(90deg, transparent 95%, rgba(0, 255, 242, 0.1) 95%);
+        background-size: 50px 50px;
+        z-index: -1;
+        perspective: 1000px;
+        transform-style: preserve-3d;
+        animation: gridMove 20s linear infinite;
+    }
+
+    @keyframes gridMove {
+        0% { transform: translateZ(0) rotate3d(1, 0, 0, 75deg); }
+        100% { transform: translateZ(100px) rotate3d(1, 0, 0, 75deg); }
+    }
+
+    .dashboard-container {
+        padding: 2rem;
+        position: relative;
+        z-index: 1;
+    }
+
+    .dashboard-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 2rem;
+    }
+
+    .dashboard-title {
+        font-size: 2.5rem;
+        font-weight: 700;
+        color: var(--text-dark);
+    }
+
+    .action-button {
+        background: var(--primary-color);
+        color: white;
+        padding: 0.75rem 1.5rem;
+        font-size: 1rem;
+        border-radius: 8px;
+        border: none;
+        transition: all 0.3s ease;
+        cursor: pointer;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .action-button:hover {
+        background: #357abd;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(74, 144, 226, 0.2);
+    }
+
+    .action-button.logout {
+        background: var(--danger-color);
+    }
+
+    .action-button.logout:hover {
+        background: #c0392b;
+    }
+
+    .stats-card {
+        background: var(--card-bg);
+        border: 1px solid var(--border-color);
+        border-radius: 15px;
+        padding: 1.5rem;
+        margin-bottom: 2rem;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+        transition: all 0.3s ease;
+    }
+
+    .stats-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 15px rgba(0, 0, 0, 0.1);
+    }
+
+    .stats-title {
+        font-size: 1.2rem;
+        color: var(--primary-color);
+        margin-bottom: 1rem;
+    }
+
+    .stats-value {
+        font-size: 2rem;
+        font-weight: 700;
+        color: var(--text-dark);
+    }
+
+    .stats-change {
+        font-size: 0.9rem;
+        color: var(--success-color);
+    }
+
+    .stats-change.negative {
+        color: var(--danger-color);
+    }
+
+    .system-status {
+        background: var(--card-bg);
+        border: 1px solid var(--border-color);
+        border-radius: 15px;
+        padding: 1.5rem;
+        margin-top: 2rem;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+    }
+
+    .status-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 1rem 0;
+        border-bottom: 1px solid var(--border-color);
+    }
+
+    .status-item:last-child {
+        border-bottom: none;
+    }
+
+    .status-label {
+        color: var(--text-dark);
+        opacity: 0.8;
+    }
+
+    .status-value {
+        font-weight: 600;
+        color: var(--primary-color);
+    }
+
+    .progress-bar {
+        height: 6px;
+        background: #e9ecef;
+        border-radius: 3px;
+        overflow: hidden;
+        margin-top: 0.5rem;
+    }
+
+    .progress-fill {
+        height: 100%;
+        background: var(--primary-color);
+        border-radius: 3px;
+        transition: width 0.3s ease;
+    }
+
+    .recent-activity {
+        background: var(--card-bg);
+        border: 1px solid var(--border-color);
+        border-radius: 15px;
+        padding: 1.5rem;
+        margin-top: 2rem;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+    }
+
+    .activity-item {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        padding: 1rem 0;
+        border-bottom: 1px solid var(--border-color);
+    }
+
+    .activity-item:last-child {
+        border-bottom: none;
+    }
+
+    .activity-icon {
+        width: 40px;
+        height: 40px;
+        background: rgba(74, 144, 226, 0.1);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--primary-color);
+    }
+
+    .activity-details {
+        flex: 1;
+    }
+
+    .activity-title {
+        font-weight: 600;
+        color: var(--text-dark);
+        margin-bottom: 0.25rem;
+    }
+
+    .activity-time {
+        font-size: 0.9rem;
+        color: var(--text-dark);
+        opacity: 0.6;
+    }
+
+    .alert {
+        background: #fff3cd;
+        border-left: 4px solid var(--warning-color);
+        padding: 1rem;
+        margin-bottom: 1rem;
+        border-radius: 8px;
+    }
+
+    .alert-warning {
+        border-color: var(--warning-color);
+        color: #856404;
+    }
+
+    .alert-danger {
+        border-color: var(--danger-color);
+        color: #721c24;
+    }
+</style>
+
+<div class="neon-grid"></div>
+
+<div class="dashboard-container">
+    <div class="dashboard-header">
+        <h1 class="dashboard-title">Admin Dashboard</h1>
+        <a href="{% url 'logout' %}" class="action-button logout">
+            <i class="fas fa-sign-out-alt"></i> Logout
+        </a>
+    </div>
+
+    <div class="row">
+        <div class="col-md-3">
+            <div class="stats-card">
+                <h3 class="stats-title">Total Users</h3>
+                <div class="stats-value">{{ stats.total_users }}</div>
+                <div class="stats-change">
+                    +{{ stats.new_users }} new this month
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stats-card">
+                <h3 class="stats-title">Active Users</h3>
+                <div class="stats-value">{{ stats.active_users }}</div>
+                <div class="stats-change">
+                    {{ stats.active_percentage }}% active
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stats-card">
+                <h3 class="stats-title">System Load</h3>
+                <div class="stats-value">{{ stats.system_load }}%</div>
+                <div class="stats-change">
+                    Uptime: {{ stats.uptime }}
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stats-card">
+                <h3 class="stats-title">Pending Actions</h3>
+                <div class="stats-value">{{ stats.pending_actions }}</div>
+                <div class="stats-change">
+                    {{ stats.critical_alerts }} critical
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- System Status -->
+    <div class="system-status">
+        <h3 class="mb-4">System Status</h3>
+        <div class="status-item">
+            <div class="status-label">Storage Usage</div>
+            <div class="status-value">{{ system_status.storage_usage }}%</div>
+            <div class="progress-bar">
+                <div class="progress-fill" style="width: {{ system_status.storage_usage }}%"></div>
+            </div>
+        </div>
+        <div class="status-item">
+            <div class="status-label">Memory Usage</div>
+            <div class="status-value">{{ system_status.memory_usage }}%</div>
+            <div class="progress-bar">
+                <div class="progress-fill" style="width: {{ system_status.memory_usage }}%"></div>
+            </div>
+        </div>
+        <div class="status-item">
+            <div class="status-label">CPU Usage</div>
+            <div class="status-value">{{ system_status.cpu_usage }}%</div>
+            <div class="progress-bar">
+                <div class="progress-fill" style="width: {{ system_status.cpu_usage }}%"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- System Alerts -->
+    {% if system_alerts %}
+    <div class="system-status mt-4">
+        <h3 class="mb-4">System Alerts</h3>
+        {% for alert in system_alerts %}
+        <div class="alert alert-{{ alert.type }}">
+            <strong>{{ alert.title }}</strong>
+            <p class="mb-0">{{ alert.message }}</p>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <!-- Recent Activity -->
+    <div class="recent-activity">
+        <h3 class="mb-4">Recent Activity</h3>
+        {% for activity in recent_activity %}
+        <div class="activity-item">
+            <div class="activity-icon">
+                <i class="fas fa-{{ activity.action|lower }}"></i>
+            </div>
+            <div class="activity-details">
+                <div class="activity-title">{{ activity.action }} - {{ activity.user }}</div>
+                <div class="activity-time">{{ activity.timestamp }}</div>
+            </div>
+            <div class="status-value">{{ activity.status }}</div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="dashboard-actions mt-4">
+        <a href="{% url 'manage_users' %}" class="action-button">
+            <i class="fas fa-users"></i> Manage Users
+        </a>
+        <a href="{% url 'system_settings' %}" class="action-button">
+            <i class="fas fa-cog"></i> System Settings
+        </a>
+        <a href="{% url 'user_logs' %}" class="action-button">
+            <i class="fas fa-list"></i> View Logs
+        </a>
+    </div>
+</div>
+
+<script>
+    // Add smooth animation to cards
+    document.querySelectorAll('.stats-card').forEach((card, index) => {
+        card.style.animation = `fadeInUp 0.5s ease forwards ${index * 0.1}s`;
+    });
+
+    // Add hover effect to activity items
+    document.querySelectorAll('.activity-item').forEach(item => {
+        item.addEventListener('mouseenter', () => {
+            item.style.background = 'rgba(74, 144, 226, 0.05)';
+        });
+        item.addEventListener('mouseleave', () => {
+            item.style.background = 'transparent';
+        });
+    });
+</script>
+{% endblock %} 

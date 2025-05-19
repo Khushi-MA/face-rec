@@ -1,0 +1,574 @@
+{% extends 'common_links.html' %}
+{% block content %}
+{% load static %}
+
+<title>LED Control</title>
+<style>
+    body {
+        background: linear-gradient(135deg, #275f17, #bdf1ac);
+    }
+    .container.mt-4 {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 10px;
+    }
+    .card {
+        margin-top: 15px;
+        border: none;
+        border-radius: 15px;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        background: linear-gradient(135deg, #e8ece7, #f9f9ff);
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        animation: slideIn 0.8s ease-out forwards;
+        height: 450px;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+    }
+    .card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+    }
+    .card-title {
+        font-size: 1.75rem;
+        font-weight: 700;
+        margin-bottom: 15px;
+        animation: fadeInDown 0.6s ease-out;
+    }
+    .card-text {
+        font-size: 1.1rem;
+        color: #333;
+        margin-bottom: 10px;
+        animation: fadeInUp 0.8s ease-out;
+    }
+    .status-badge {
+        padding: 6px 12px;
+        border-radius: 20px;
+        color: white;
+        font-weight: 600;
+        font-size: 0.9rem;
+        transition: transform 0.3s ease;
+        animation: bounceIn 0.5s ease-out;
+    }
+    .status-badge:hover {
+        transform: scale(1.1);
+    }
+    .bg-success { background-color: #28a745; }
+    .bg-danger { background-color: #dc3545; }
+    .timer-inputs {
+        display: flex;
+        gap: 8px;
+        justify-content: center;
+        margin-bottom: 15px;
+    }
+    .timer-inputs input {
+        width: 80px;
+        padding: 6px;
+        border: 1px solid #ddd;
+        border-radius: 5px;
+        text-align: center;
+        transition: border-color 0.3s ease, box-shadow 0.3s ease;
+    }
+    .timer-inputs input:focus {
+        border-color: #007bff;
+        box-shadow: 0 0 5px rgba(0, 123, 255, 0.5);
+        outline: none;
+    }
+    .gauge {
+        position: relative;
+        width: 200px;
+        height: 200px;
+        margin: 0 auto;
+        perspective: 1000px;
+    }
+    .progress-ring {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        filter: drop-shadow(3px 3px 5px rgba(0, 0, 0, 0.3));
+    }
+    .progress-ring__background {
+        width: 100%;
+        height: 100%;
+        fill: none;
+        stroke: url(#backgroundGradient);
+        stroke-width: 10;
+        filter: url(#innerShadow);
+    }
+    .progress-ring__circle {
+        width: 100%;
+        height: 100%;
+        fill: none;
+        stroke: url(#progressGradient);
+        stroke-width: 10;
+        stroke-linecap: round;
+        transform: rotate(-90deg);
+        transform-origin: 50% 50%;
+        transition: stroke-dashoffset 1s linear;
+    }
+    .gauge-base {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        fill: url(#baseGradient);
+        filter: drop-shadow(0 5px 10px rgba(0, 0, 0, 0.2));
+    }
+    .timer-display {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        font-size: 2em;
+        font-weight: 700;
+        color: #333;
+        text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.2);
+    }
+    .total-seconds {
+        margin-top: 8px;
+        font-size: 1rem;
+        color: #666;
+        text-align: center;
+    }
+    .controls {
+        display: flex;
+        justify-content: center;
+        gap: 15px;
+        margin-top: 15px;
+    }
+    .btn {
+        border-radius: 25px;
+        border: none;
+        background: #28a745;
+        color: #fff;
+        font-weight: 600;
+        font-size: 1rem;
+        text-transform: uppercase;
+        cursor: pointer;
+        transition: background 0.3s, transform 0.3s;
+        animation: bounceIn 0.6s ease-out;
+    }
+    .btn-danger {
+        background: #dc3545;
+    }
+    .btn:hover {
+        transform: scale(1.05);
+        background: #218838;
+    }
+    .btn-danger:hover {
+        background: #c82333;
+    }
+    .btn:active {
+        transform: scale(0.95);
+    }
+    .sensor-data-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 10px;
+        margin-top: 10px;
+    }
+    .sensor-card {
+        background: #fff;
+        border-radius: 10px;
+        padding: 10px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        text-align: center;
+        transition: transform 0.3s ease;
+    }
+    .sensor-card:hover {
+        transform: translateY(-3px);
+    }
+    .sensor-card p {
+        margin: 0;
+        font-size: 0.9rem;
+        color: #333;
+    }
+    .sensor-card .label {
+        font-weight: 600;
+        color: #555;
+    }
+    .sensor-card .value {
+        font-weight: 700;
+        margin-top: 5px;
+    }
+    .sensor-card .status-badge {
+        display: inline-block;
+        margin-top: 5px;
+    }
+    @keyframes slideIn {
+        from { opacity: 0; transform: translateY(30px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes fadeInDown {
+        from { opacity: 0; transform: translateY(-20px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes fadeInUp {
+        from { opacity: 0; transform: translateY(20px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes bounceIn {
+        0% { transform: scale(0.3); opacity: 0; }
+        50% { transform: scale(1.05); opacity: 1; }
+        100% { transform: scale(1); opacity: 1; }
+    }
+    @media (max-width: 768px) {
+        .container.mt-4 {
+            padding: 5px;
+        }
+        .card {
+            margin-top: 10px;
+            height: auto;
+            padding: 10px;
+        }
+        .card-title {
+            font-size: 1.3rem;
+            margin-bottom: 10px;
+        }
+        .card-text {
+            font-size: 0.9rem;
+            margin-bottom: 5px;
+        }
+        .sensor-data-grid {
+            grid-template-columns: 1fr;
+            gap: 5px;
+            margin-top: 5px;
+        }
+        .sensor-card {
+            padding: 8px;
+        }
+        .sensor-card p {
+            font-size: 0.8rem;
+        }
+        .sensor-card .value {
+            margin-top: 3px;
+        }
+        .sensor-card .status-badge {
+            padding: 4px 8px;
+            font-size: 0.7rem;
+        }
+        .gauge {
+            width: 150px;
+            height: 150px;
+        }
+        .progress-ring__background,
+        .progress-ring__circle,
+        .gauge-base {
+            cx: 75;
+            cy: 75;
+            r: 65;
+        }
+        .progress-ring__circle {
+            stroke-dasharray: 408.407;
+        }
+        .timer-display {
+            font-size: 1.5rem;
+        }
+        .timer-inputs {
+            gap: 5px;
+            margin-bottom: 10px;
+        }
+        .timer-inputs input {
+            width: 60px;
+            padding: 5px;
+            font-size: 0.9rem;
+        }
+        .total-seconds {
+            margin-top: 5px;
+            font-size: 0.9rem;
+        }
+        .controls {
+            gap: 10px;
+            margin-top: 10px;
+        }
+        .btn {
+            width: 80px;
+            height: 40px;
+            font-size: 0.9rem;
+            border-radius: 20px;
+        }
+    }
+</style>
+
+<div class="container mt-4">
+    <div class="row">
+        <!-- Sensor Data Card -->
+        <div class="col-sm-6">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <h5 class="card-title text-success text-center">Sensor Data</h5>
+                    <p class="card-text"><strong></strong> <span id="device_name_display"></span></p>
+                    <div class="sensor-card">
+                        <p class="label">My Device</p>
+                        <p class="value">{{ device_name }}</p>
+                    </div>
+                    <input type="hidden" id="device_name" value="{{ device_name }}">
+
+                    <div id="sensor-data" class="sensor-data-grid">
+                        {% if latest_entry %}
+                            <div class="sensor-card">
+                                <p class="label">Temperature</p>
+                                <p class="value">{{ latest_entry.temperature }} °C</p>
+                            </div>
+                            <div class="sensor-card">
+                                <p class="label">Moisture</p>
+                                <p class="value">{{ latest_entry.moisture }}%</p>
+                            </div>
+                            <div class="sensor-card">
+                                <p class="label">Last Updated</p>
+                                <p class="value">{{ latest_entry.timestamp }}</p>
+                            </div>
+                            <div class="sensor-card">
+                                <p class="label fw-7" style="color: #34c759;">Motor Status</p>
+                                <span id="relay_status" class="status-badge {% if motor_status.relay_status == 'ON' %}bg-success{% else %}bg-danger{% endif %}">
+                                    {{ motor_status.relay_status|default:"OFF" }}
+                                </span>
+                            </div>
+                        {% else %}
+                            <div class="sensor-card">
+                                <p class="value text-danger">No sensor data available.</p>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Motor Control Card -->
+        <div class="col-sm-6">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <h5 class="card-title text-success text-center">Motor Control</h5>
+                    <div class="gauge">
+                        <svg class="progress-ring">
+                            <defs>
+                                <linearGradient id="baseGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                                    <stop offset="0%" style="stop-color:#f0f0f0;stop-opacity:1" />
+                                    <stop offset="100%" style="stop-color:#d0d0d0;stop-opacity:1" />
+                                </linearGradient>
+                                <linearGradient id="backgroundGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                                    <stop offset="0%" style="stop-color:#e0e0e0;stop-opacity:1" />
+                                    <stop offset="100%" style="stop-color:#b0b0b0;stop-opacity:1" />
+                                </linearGradient>
+                                <linearGradient id="progressGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                                    <stop offset="0%" style="stop-color:#34c759;stop-opacity:1" />
+                                    <stop offset="50%" style="stop-color:#28a745;stop-opacity:1" />
+                                    <stop offset="100%" style="stop-color:#1e7e34;stop-opacity:1" />
+                                </linearGradient>
+                                <filter id="innerShadow">
+                                    <feOffset dx="0" dy="0" />
+                                    <feGaussianBlur stdDeviation="3" result="offset-blur" />
+                                    <feComposite operator="out" in="SourceGraphic" in2="offset-blur" result="inverse" />
+                                    <feFlood flood-color="black" flood-opacity="0.5" result="color" />
+                                    <feComposite operator="in" in="color" in2="inverse" result="shadow" />
+                                    <feComposite operator="over" in="shadow" in2="SourceGraphic" />
+                                </filter>
+                            </defs>
+                            <circle class="gauge-base" cx="100" cy="100" r="95" />
+                            <circle class="progress-ring__background" cx="100" cy="100" r="90" />
+                            <circle class="progress-ring__circle" cx="100" cy="100" r="90" stroke-dasharray="565.486" stroke-dashoffset="0" />
+                        </svg>
+                        <div class="timer-display" id="countdown">00:00:00</div>
+                    </div>
+                    <label><strong>Set Timer:</strong></label>
+                    <div class="timer-inputs">
+                        <input type="number" id="timer_hours" min="0" placeholder="Hrs" class="form-control">
+                        <input type="number" id="timer_minutes" min="0" placeholder="Mins" class="form-control">
+                        <input type="number" id="timer_seconds" min="0" placeholder="Secs" class="form-control">
+                    </div>
+                    <div class="total-seconds" id="total-seconds">Total 0 Seconds</div>
+                    <div class="controls">
+                        <button class="btn btn-danger text" style="width: 100px; height: 50px;" onclick="sendLedCommand('OFF')">OFF</button>
+                        <button class="btn btn-success" style="width: 100px; height: 50px;" onclick="sendLedCommand('ON')">ON</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+    let countdownInterval;
+    let totalTime = 0;
+
+    document.addEventListener("DOMContentLoaded", function () {
+        const deviceName = document.getElementById("device_name").value;
+        const timerElement = document.getElementById("countdown");
+        const totalSecondsElement = document.getElementById("total-seconds");
+        const progressCircle = document.querySelector('.progress-ring__circle');
+
+        // Set initial UI to "Loading" state
+        timerElement.innerText = "Loading...";
+        totalSecondsElement.innerText = "Fetching status...";
+
+        // Fetch initial motor status and timer from server
+        fetchInitialStatus();
+
+        // Poll motor status every 5 seconds
+        setInterval(fetchMotorStatus, 5000);
+
+        function fetchInitialStatus() {
+            fetch(`/api/get_motor_status/?device_name=${deviceName}`)
+                .then(response => response.json())
+                .then(data => {
+                    updateMotorStatus(data);
+                    if (data.relay_status === "ON" && data.end_time) {
+                        const now = Math.floor(Date.now() / 1000);
+                        const endTime = Math.floor(new Date(data.end_time).getTime() / 1000);
+                        if (endTime > now) {
+                            totalTime = endTime - now;
+                            startCountdown(endTime);
+                        } else {
+                            showNoTimer();
+                        }
+                    } else {
+                        showNoTimer();
+                    }
+                })
+                .catch(error => {
+                    console.error("Error fetching initial status:", error);
+                    Swal.fire("Error", "Could not load initial status.", "error");
+                    showNoTimer();
+                });
+        }
+
+        function fetchMotorStatus() {
+            fetch(`/api/get_motor_status/?device_name=${deviceName}`)
+                .then(response => response.json())
+                .then(data => {
+                    updateMotorStatus(data);
+                })
+                .catch(error => {
+                    console.error("Error fetching motor status:", error);
+                });
+        }
+
+        function updateMotorStatus(data) {
+            document.getElementById("relay_status").innerText = data.relay_status || "OFF";
+            document.getElementById("relay_status").className = `status-badge ${data.relay_status === "ON" ? "bg-success" : "bg-danger"}`;
+        }
+
+        function startCountdown(endTime) {
+            clearCountdown();
+            countdownInterval = setInterval(function () {
+                let now = Math.floor(Date.now() / 1000);
+                let timeLeft = endTime - now;
+
+                if (timeLeft <= 0) {
+                    clearInterval(countdownInterval);
+                    document.getElementById("relay_status").innerText = "OFF";
+                    document.getElementById("relay_status").className = "status-badge bg-danger";
+                    timerElement.innerText = "00:00:00";
+                    totalSecondsElement.innerText = "Motor has turned OFF.";
+                    totalTime = 0;
+                    updateProgress(0);
+                } else {
+                    updateTimerDisplay(timeLeft);
+                    updateProgress(timeLeft);
+                }
+            }, 1000);
+        }
+
+        function updateTimerDisplay(timeLeft) {
+            let hrs = Math.floor(timeLeft / 3600);
+            let mins = Math.floor((timeLeft % 3600) / 60);
+            let secs = timeLeft % 60;
+            timerElement.innerText = `${hrs.toString().padStart(2, '0')}:${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+            totalSecondsElement.innerText = `Total ${totalTime} Seconds`;
+        }
+
+        function updateProgress(timeLeft) {
+            const circumference = window.innerWidth <= 768 ? 408.407 : 565.486;
+            const offset = circumference * (1 - timeLeft / totalTime);
+            progressCircle.setAttribute('stroke-dasharray', circumference);
+            progressCircle.setAttribute('stroke-dashoffset', offset);
+        }
+
+        function showNoTimer() {
+            timerElement.innerText = "00:00:00";
+            totalSecondsElement.innerText = "Total 0 Seconds";
+            updateProgress(0);
+        }
+
+        function clearCountdown() {
+            clearInterval(countdownInterval);
+        }
+
+        window.sendLedCommand = function(status) {
+            let sensorDataAvailable = {{ latest_entry|yesno:"true,false" }};
+            if (!sensorDataAvailable) {
+                Swal.fire("Device Offline", "Your device is offline. Please check the connection.", "error");
+                return;
+            }
+
+            if (!deviceName) {
+                Swal.fire("Error", "Device name is missing!", "error");
+                return;
+            }
+
+            let hours = parseInt(document.getElementById("timer_hours").value) || 0;
+            let minutes = parseInt(document.getElementById("timer_minutes").value) || 0;
+            let seconds = parseInt(document.getElementById("timer_seconds").value) || 0;
+            let totalSeconds = (hours * 3600) + (minutes * 60) + seconds;
+
+            let requestData = { device_name: deviceName, relay_status: status };
+            if (status === "ON" && totalSeconds > 0) {
+                requestData.timer_duration = totalSeconds;
+            }
+
+            fetch("/api/update_led_status/", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "X-CSRFToken": getCookie("csrftoken")
+                },
+                body: JSON.stringify(requestData)
+            })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.error) {
+                        Swal.fire("Error", data.error, "error");
+                    } else {
+                        document.getElementById("relay_status").innerText = status;
+                        document.getElementById("relay_status").className = status === "ON" ? "status-badge bg-success" : "status-badge bg-danger";
+                        Swal.fire("Success", `Motor turned ${status}`, "success");
+
+                        if (status === "ON" && totalSeconds > 0) {
+                            const now = Math.floor(Date.now() / 1000);
+                            const endTime = now + totalSeconds;
+                            totalTime = totalSeconds;
+                            startCountdown(endTime);
+                        } else {
+                            clearCountdown();
+                            showNoTimer();
+                        }
+                    }
+                })
+                .catch(error => {
+                    Swal.fire("Request Failed", "Something went wrong! Please try again.", "error");
+                    console.error("Error:", error);
+                });
+        };
+
+        function getCookie(name) {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                let cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    let cookie = cookies[i].trim();
+                    if (cookie.startsWith(name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+    });
+</script>
+
+{% endblock %}

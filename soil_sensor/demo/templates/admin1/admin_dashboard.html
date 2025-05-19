@@ -1,0 +1,311 @@
+{% extends 'admin1/base.html' %}
+{% load static %}
+
+{% block title %}Coretronics Admin Dashboard{% endblock %}
+
+{% block content %}
+<div class="dashboard_content_wrapper min-h-screen bg-gray-50">
+    <div class="dashboard dashboard_wrapper max-w-7xl mx-auto px-4 py-6 sm:px-6 lg:px-8">
+        <div class="dashboard__main">
+            <div class="dashboard__content">
+                <!-- Custom Header with Crop Pattern -->
+                <div class="relative bg-gradient-to-r from-green-100 via-emerald-50 to-teal-100 rounded-xl p-6 mb-8 overflow-hidden shadow-lg transition-all duration-300 hover:shadow-xl">
+                    <div class="absolute inset-0 bg-[url('data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22%3E%3Cpath fill=%22none%22 stroke=%22%23a3bffa%22 stroke-width=%221%22 d=%22M10 10 L90 90 M90 10 L10 90%22/%3E%3Ccircle cx=%2250%22 cy=%2250%22 r=%2240%22 fill=%22%23a3bffa%22 opacity=%220.1%22/%3E%3C/svg%22)] opacity-15"></div>
+                    <h1 class="text-3xl md:text-4xl font-bold text-gray-800 relative z-10 text-center animate-fade-in">Coretronics Admin Dashboard</h1>
+                </div>
+
+                <!-- System Overview -->
+                <div class="mb-10">
+                    <h2 class="text-xl md:text-2xl font-semibold text-gray-700 mb-6">System Overview</h2>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6">
+                        <!-- Total Users Card -->
+                        <div class="bg-gradient-to-br from-emerald-100 to-emerald-200 bg-opacity-90 backdrop-blur-sm rounded-xl p-6 text-center shadow-[0_4px_15px_rgba(0,0,0,0.1)] border border-emerald-300 relative overflow-hidden transition-all duration-300 hover:shadow-[0_8px_25px_rgba(0,128,0,0.3)] hover:-translate-y-2 hover:rotate-2 group">
+                            <div class="absolute inset-0 bg-[url('data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22%3E%3Ccircle cx=%2250%22 cy=%2250%22 r=%2240%22 fill=%22none%22 stroke=%22%23a3bffa%22 stroke-width=%220.5%22 opacity=%220.2%22/%3E%3C/svg%22)] opacity-20"></div>
+                            <i class="fas fa-users text-3xl text-emerald-600 mb-4 animate-pulse-slow relative z-10"></i>
+                            <h3 class="text-sm font-medium text-gray-700 mb-2 relative z-10">Total Users</h3>
+                            <p class="text-2xl font-bold text-emerald-800 mb-3 relative z-10">{{ total_users }}</p>
+                            <div class="w-20 h-1.5 bg-emerald-400 rounded-full mx-auto mb-2 relative z-10"></div>
+                            <div class="text-xs text-gray-500 relative z-10">Progress: <span class="text-emerald-600 font-medium">{{ total_users|default:0 }} / 1000</span></div>
+                        </div>
+
+                        <!-- Total Devices Card -->
+                        <div class="bg-gradient-to-br from-teal-100 to-teal-200 bg-opacity-90 backdrop-blur-sm rounded-xl p-6 text-center shadow-[0_4px_15px_rgba(0,0,0,0.1)] border border-teal-300 relative overflow-hidden transition-all duration-300 hover:shadow-[0_8px_25px_rgba(0,128,128,0.3)] hover:-translate-y-2 hover:-rotate-2 group">
+                            <div class="absolute inset-0 bg-[url('data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22%3E%3Ccircle cx=%2250%22 cy=%2250%22 r=%2240%22 fill=%22none%22 stroke=%22%23a3bffa%22 stroke-width=%220.5%22 opacity=%220.2%22/%3E%3C/svg%22)] opacity-20"></div>
+                            <i class="fas fa-laptop text-3xl text-teal-600 mb-4 animate-pulse-slow relative z-10"></i>
+                            <h3 class="text-sm font-medium text-gray-700 mb-2 relative z-10">Total Devices</h3>
+                            <p class="text-2xl font-bold text-teal-800 mb-3 relative z-10">{{ total_devices }}</p>
+                            <div class="w-20 h-1.5 bg-teal-400 rounded-full mx-auto mb-2 relative z-10"></div>
+                            <div class="text-xs text-gray-500 relative z-10">Progress: <span class="text-teal-600 font-medium">{{ total_devices|default:0 }} / 500</span></div>
+                        </div>
+
+                        <!-- Fertilizers Card -->
+                        <div class="bg-gradient-to-br from-purple-100 to-purple-200 bg-opacity-90 backdrop-blur-sm rounded-xl p-6 text-center shadow-[0_4px_15px_rgba(0,0,0,0.1)] border border-purple-300 relative overflow-hidden transition-all duration-300 hover:shadow-[0_8px_25px_rgba(128,0,128,0.3)] hover:-translate-y-2 hover:rotate-2 group">
+                            <div class="absolute inset-0 bg-[url('data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22%3E%3Ccircle cx=%2250%22 cy=%2250%22 r=%2240%22 fill=%22none%22 stroke=%22%23a3bffa%22 stroke-width=%220.5%22 opacity=%220.2%22/%3E%3C/svg%22)] opacity-20"></div>
+                            <i class="fas fa-seedling text-3xl text-purple-600 mb-4 animate-pulse-slow relative z-10"></i>
+                            <h3 class="text-sm font-medium text-gray-700 mb-2 relative z-10">Fertilizers</h3>
+                            <p class="text-2xl font-bold text-purple-800 mb-3 relative z-10">{{ total_fertilizers }}</p>
+                            <div class="w-20 h-1.5 bg-purple-400 rounded-full mx-auto mb-2 relative z-10"></div>
+                            <div class="text-xs text-gray-500 relative z-10">Progress: <span class="text-purple-600 font-medium">{{ total_fertilizers|default:0 }} / 200</span></div>
+                        </div>
+
+                        <!-- Diseases Card -->
+                        <div class="bg-gradient-to-br from-orange-100 to-orange-200 bg-opacity-90 backdrop-blur-sm rounded-xl p-6 text-center shadow-[0_4px_15px_rgba(0,0,0,0.1)] border border-orange-300 relative overflow-hidden transition-all duration-300 hover:shadow-[0_8px_25px_rgba(255,165,0,0.3)] hover:-translate-y-2 hover:-rotate-2 group">
+                            <div class="absolute inset-0 bg-[url('data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22%3E%3Ccircle cx=%2250%22 cy=%2250%22 r=%2240%22 fill=%22none%22 stroke=%22%23a3bffa%22 stroke-width=%220.5%22 opacity=%220.2%22/%3E%3C/svg%22)] opacity-20"></div>
+                            <i class="fas fa-bug text-3xl text-orange-600 mb-4 animate-pulse-slow relative z-10"></i>
+                            <h3 class="text-sm font-medium text-gray-700 mb-2 relative z-10">Diseases</h3>
+                            <p class="text-2xl font-bold text-orange-800 mb-3 relative z-10">{{ total_diseases }}</p>
+                            <div class="w-20 h-1.5 bg-orange-400 rounded-full mx-auto mb-2 relative z-10"></div>
+                            <div class="text-xs text-gray-500 relative z-10">Progress: <span class="text-orange-600 font-medium">{{ total_diseases|default:0 }} / 150</span></div>
+                        </div>
+
+                        <!-- Crops Card -->
+                        <div class="bg-gradient-to-br from-red-100 to-red-200 bg-opacity-90 backdrop-blur-sm rounded-xl p-6 text-center shadow-[0_4px_15px_rgba(0,0,0,0.1)] border border-red-300 relative overflow-hidden transition-all duration-300 hover:shadow-[0_8px_25px_rgba(255,0,0,0.3)] hover:-translate-y-2 hover:rotate-2 group">
+                            <div class="absolute inset-0 bg-[url('data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22%3E%3Ccircle cx=%2250%22 cy=%2250%22 r=%2240%22 fill=%22none%22 stroke=%22%23a3bffa%22 stroke-width=%220.5%22 opacity=%220.2%22/%3E%3C/svg%22)] opacity-20"></div>
+                            <i class="fas fa-leaf text-3xl text-red-600 mb-4 animate-pulse-slow relative z-10"></i>
+                            <h3 class="text-sm font-medium text-gray-700 mb-2 relative z-10">Crops</h3>
+                            <p class="text-2xl font-bold text-red-800 mb-3 relative z-10">{{ total_crops }}</p>
+                            <div class="w-20 h-1.5 bg-red-400 rounded-full mx-auto mb-2 relative z-10"></div>
+                            <div class="text-xs text-gray-500 relative z-10">Progress: <span class="text-red-600 font-medium">{{ total_crops|default:0 }} / 300</span></div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Device Status Table -->
+                <div class="mb-10">
+                    <h2 class="text-xl md:text-2xl font-semibold text-gray-700 mb-6">Device Status</h2>
+                    <div class="overflow-x-auto rounded-lg shadow-glass">
+                        <table class="w-full text-sm text-gray-700 border-collapse bg-white bg-opacity-90 backdrop-blur-sm">
+                            <thead>
+                                <tr class="bg-gray-100 bg-opacity-50">
+                                    <th class="py-3 px-4 text-left font-medium border-b border-gray-200">Device Name</th>
+                                    <th class="py-3 px-4 text-left font-medium border-b border-gray-200">Temperature (°C)</th>
+                                    <th class="py-3 px-4 text-left font-medium border-b border-gray-200">Moisture (%)</th>
+                                    <th class="py-3 px-4 text-left font-medium border-b border-gray-200">Relay Status</th>
+                                    <th class="py-3 px-4 text-left font-medium border-b border-gray-200">Timer (s)</th>
+                                    <th class="py-3 px-4 text-left font-medium border-b border-gray-200">Last Updated</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for device in devices %}
+                                <tr class="border-b border-gray-200 hover:bg-emerald-50 transition-colors duration-200">
+                                    <td class="py-3 px-4">{{ device.device_name }}</td>
+                                    <td class="py-3 px-4">{{ device.latest_sensor_data.temperature|default:"N/A" }}</td>
+                                    <td class="py-3 px-4">{{ device.latest_sensor_data.moisture|default:"N/A" }}</td>
+                                    <td class="py-3 px-4">
+                                        <span class="inline-block px-2 py-1 rounded-full text-xs font-medium {% if device.latest_led_control.relay_status == 'ON' %}bg-green-100 text-green-800{% else %}bg-red-100 text-red-800{% endif %}">
+                                            {{ device.latest_led_control.relay_status|default:"N/A" }}
+                                        </span>
+                                    </td>
+                                    <td class="py-3 px-4">{{ device.latest_led_control.timer_duration|default:"N/A" }}</td>
+                                    <td class="py-3 px-4">{{ device.latest_sensor_data.timestamp|default:"N/A" }}</td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="6" class="py-4 px-4 text-center text-gray-500">No devices found.</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                
+                <!-- Sensor Data Cards -->
+                <div>
+                    <div class="flex justify-between items-center mb-6">
+                        <h2 class="text-xl md:text-2xl font-semibold text-gray-700">Sensor Data Overview</h2>
+                        <select id="timeRange" class="border border-gray-300 rounded-md p-2 text-sm bg-white bg-opacity-80 backdrop-blur-sm hover:bg-gray-50 transition-colors focus:outline-none focus:ring-2 focus:ring-emerald-500">
+                            <option value="24h">Last 24 Hours</option>
+                            <option value="7d">Last 7 Days</option>
+                            <option value="30d">Last 30 Days</option>
+                        </select>
+                    </div>
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                        <!-- Temperature Card -->
+                        <div class="bg-gradient-to-br from-emerald-100 to-emerald-200 bg-opacity-90 backdrop-blur-sm rounded-xl p-6 shadow-[0_4px_15px_rgba(0,0,0,0.1)] border border-emerald-300 relative overflow-hidden transition-all duration-300 hover:shadow-[0_8px_25px_rgba(0,128,0,0.3)] hover:-translate-y-2 hover:rotate-2 group">
+                            <div class="absolute inset-0 bg-[url('data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22%3E%3Ccircle cx=%2250%22 cy=%2250%22 r=%2240%22 fill=%22none%22 stroke=%22%23a3bffa%22 stroke-width=%220.5%22 opacity=%220.2%22/%3E%3C/svg%22)] opacity-20"></div>
+                            <i class="fas fa-thermometer-half text-3xl text-emerald-600 mb-4 animate-pulse-slow relative z-10"></i>
+                            <h3 class="text-base md:text-lg font-medium text-gray-700 mb-2 relative z-10">Temperature (°C)</h3>
+                            <p class="text-2xl font-bold text-emerald-800 mb-3 relative z-10">
+                                {{ sensor_data.latest_temperature|default:"N/A" }}
+                            </p>
+                            <div class="relative h-40 w-full mb-4">
+                                <canvas id="temperatureChart" class="absolute inset-0"></canvas>
+                            </div>
+                            <div class="text-xs text-gray-500 relative z-10">Status: <span class="font-medium {% if sensor_data.latest_temperature|default:0 > 30 %}text-red-600{% elif sensor_data.latest_temperature|default:0 < 15 %}text-blue-600{% else %}text-green-600{% endif %}">{{ sensor_data.latest_temperature_status|default:"Normal" }}</span></div>
+                        </div>
+
+                        <!-- Moisture Card -->
+                        <div class="bg-gradient-to-br from-teal-100 to-teal-200 bg-opacity-90 backdrop-blur-sm rounded-xl p-6 shadow-[0_4px_15px_rgba(0,0,0,0.1)] border border-teal-300 relative overflow-hidden transition-all duration-300 hover:shadow-[0_8px_25px_rgba(0,128,128,0.3)] hover:-translate-y-2 hover:-rotate-2 group">
+                            <div class="absolute inset-0 bg-[url('data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22%3E%3Ccircle cx=%2250%22 cy=%2250%22 r=%2240%22 fill=%22none%22 stroke=%22%23a3bffa%22 stroke-width=%220.5%22 opacity=%220.2%22/%3E%3C/svg%22)] opacity-20"></div>
+                            <i class="fas fa-tint text-3xl text-teal-600 mb-4 animate-pulse-slow relative z-10"></i>
+                            <h3 class="text-base md:text-lg font-medium text-gray-700 mb-2 relative z-10">Moisture (%)</h3>
+                            <p class="text-2xl font-bold text-teal-800 mb-3 relative z-10">
+                                {{ sensor_data.latest_moisture|default:"N/A" }}
+                            </p>
+                            <div class="relative h-40 w-full mb-4">
+                                <canvas id="moistureChart" class="absolute inset-0"></canvas>
+                            </div>
+                            <div class="text-xs text-gray-500 relative z-10">Status: <span class="font-medium {% if sensor_data.latest_moisture|default:0 < 30 %}text-red-600{% elif sensor_data.latest_moisture|default:0 > 70 %}text-blue-600{% else %}text-green-600{% endif %}">{{ sensor_data.latest_moisture_status|default:"Normal" }}</span></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Custom Footer -->
+                <footer class="mt-10 text-center text-gray-600">
+                    <p class="text-sm">Powered by <span class="font-bold text-emerald-600">Coretronics</span> | © 2025</p>
+                </footer>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Include Chart.js and Chart.js Zoom Plugin -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-zoom@2.0.1/dist/chartjs-plugin-zoom.min.js"></script>
+<script>
+// Chart.js defaults
+Chart.defaults.responsive = true;
+Chart.defaults.maintainAspectRatio = false;
+
+// Sensor data from Django context
+let sensorData;
+try {
+    sensorData = JSON.parse('{{ sensor_data_json|safe|escapejs }}');
+    console.log("Sensor Data:", sensorData);
+} catch (e) {
+    console.error("Error parsing sensor_data_json:", e);
+    sensorData = [];
+}
+
+// Process sensor data for charts
+const processData = (range) => {
+    const now = new Date();
+    let filterDate;
+    switch (range) {
+        case '7d': filterDate = new Date(now.setDate(now.getDate() - 7)); break;
+        case '30d': filterDate = new Date(now.setDate(now.getDate() - 30)); break;
+        default: filterDate = new Date(now.setHours(now.getHours() - 24)); // 24h
+    }
+    return sensorData.length > 0 ? sensorData
+        .filter(item => new Date(item.fields.timestamp) >= filterDate)
+        .map(item => ({
+            timestamp: item.fields.timestamp,
+            temperature: item.fields.temperature,
+            moisture: item.fields.moisture
+        })) : [];
+};
+
+// Get latest values for card display
+const latestSensorData = sensorData.length > 0 ? sensorData.reduce((latest, current) => 
+    new Date(latest.fields.timestamp) > new Date(current.fields.timestamp) ? latest : current
+) : null;
+const latestTemperature = latestSensorData ? latestSensorData.fields.temperature : null;
+const latestMoisture = latestSensorData ? latestSensorData.fields.moisture : null;
+
+// Initial chart data
+let chartData = processData('24h');
+
+// Temperature Chart
+const temperatureCtx = document.getElementById('temperatureChart').getContext('2d');
+const temperatureChart = new Chart(temperatureCtx, {
+    type: 'line',
+    data: {
+        labels: chartData.length ? chartData.map(data => new Date(data.timestamp).toLocaleTimeString()) : ['No Data'],
+        datasets: [{
+            label: 'Temperature (°C)',
+            data: chartData.length ? chartData.map(data => data.temperature) : [0],
+            fill: true,
+            backgroundColor: 'rgba(16, 185, 129, 0.2)',
+            borderColor: 'rgba(16, 185, 129, 1)',
+            pointBackgroundColor: 'rgba(16, 185, 129, 1)',
+            pointRadius: 3,
+            tension: 0.3
+        }]
+    },
+    options: {
+        plugins: {
+            legend: { display: false },
+            tooltip: {
+                backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                titleFont: { family: 'Inter', size: 12 },
+                bodyFont: { family: 'Inter', size: 10 },
+                callbacks: { label: (context) => `${context.dataset.label}: ${context.raw} °C` }
+            },
+            zoom: {
+                zoom: { wheel: { enabled: true }, pinch: { enabled: true }, mode: 'x' },
+                pan: { enabled: true, mode: 'x' }
+            }
+        },
+        scales: {
+            y: { beginAtZero: false, display: false },
+            x: { display: false }
+        },
+        animation: { duration: 1000, easing: 'easeInOutQuart' }
+    }
+});
+
+// Moisture Chart
+const moistureCtx = document.getElementById('moistureChart').getContext('2d');
+const moistureChart = new Chart(moistureCtx, {
+    type: 'line',
+    data: {
+        labels: chartData.length ? chartData.map(data => new Date(data.timestamp).toLocaleTimeString()) : ['No Data'],
+        datasets: [{
+            label: 'Moisture (%)',
+            data: chartData.length ? chartData.map(data => data.moisture) : [0],
+            fill: true,
+            backgroundColor: 'rgba(34, 197, 94, 0.2)',
+            borderColor: 'rgba(34, 197, 94, 1)',
+            pointBackgroundColor: 'rgba(34, 197, 94, 1)',
+            pointRadius: 3,
+            tension: 0.3
+        }]
+    },
+    options: {
+        plugins: {
+            legend: { display: false },
+            tooltip: {
+                backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                titleFont: { family: 'Inter', size: 12 },
+                bodyFont: { family: 'Inter', size: 10 },
+                callbacks: { label: (context) => `${context.dataset.label}: ${context.raw} %` }
+            },
+            zoom: {
+                zoom: { wheel: { enabled: true }, pinch: { enabled: true }, mode: 'x' },
+                pan: { enabled: true, mode: 'x' }
+            }
+        },
+        scales: {
+            y: { beginAtZero: true, display: false },
+            x: { display: false }
+        },
+        animation: { duration: 1000, easing: 'easeInOutQuart' }
+    }
+});
+
+// Time Range Selector
+document.getElementById('timeRange').addEventListener('change', function(e) {
+    const range = e.target.value;
+    chartData = processData(range);
+    temperatureChart.data.labels = chartData.length ? chartData.map(data => new Date(data.timestamp).toLocaleTimeString()) : ['No Data'];
+    temperatureChart.data.datasets[0].data = chartData.length ? chartData.map(data => data.temperature) : [0];
+    moistureChart.data.labels = chartData.length ? chartData.map(data => new Date(data.timestamp).toLocaleTimeString()) : ['No Data'];
+    moistureChart.data.datasets[0].data = chartData.length ? chartData.map(data => data.moisture) : [0];
+    temperatureChart.update();
+    moistureChart.update();
+});
+</script>
+
+<style>
+    @keyframes pulse-slow {
+        0%, 100% { transform: scale(1); }
+        50% { transform: scale(1.05); }
+    }
+    @keyframes fade-in {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+    .animate-pulse-slow { animation: pulse-slow 2s infinite; }
+    .animate-fade-in { animation: fade-in 0.5s ease-out; }
+</style>
+{% endblock %}

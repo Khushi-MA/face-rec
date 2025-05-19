@@ -1,0 +1,26 @@
+{% extends 'base.html' %}
+
+{% block title %}Generate Threat{% endblock %}
+
+{% block content %}
+<h2 class="text-center">Generate Threat for Incident: {{ incident.title }}</h2>
+
+<form method="POST" class="mb-4">
+    {% csrf_token %}
+    <div class="mb-3">
+        <label for="threat_type" class="form-label">Threat Type:</label>
+        <input type="text" id="threat_type" name="threat_type" class="form-control" required>
+    </div>
+    <div class="mb-3">
+        <label for="threat_level" class="form-label">Threat Level:</label>
+        <select id="threat_level" name="threat_level" class="form-select" required>
+            <option value="Low">Low</option>
+            <option value="Medium">Medium</option>
+            <option value="High">High</option>
+        </select>
+    </div>
+    <button type="submit" class="btn btn-primary">Generate Threat</button>
+</form>
+
+<a href="{% url 'user_dashboard' %}" class="btn btn-secondary">Back to Dashboard</a>
+{% endblock %}

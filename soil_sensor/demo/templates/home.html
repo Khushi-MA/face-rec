@@ -1,0 +1,355 @@
+{% extends 'common_links.html' %}
+{% block content %}
+
+{% load static %}
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+<style>
+.custome_container {
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    
+}
+</style>
+
+<style>
+    .agriculture-info {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 40px 20px;
+        text-align: center;
+    }
+    
+    .agriculture-info h1 {
+        font-size: 2.5em;
+        margin-bottom: 30px;
+        position: relative;
+        display: inline-block;
+    }
+    
+    .agriculture-info h1::after {
+        content: '';
+        width: 50%;
+        height: 3px;
+        background: #4CAF50;
+        position: absolute;
+        bottom: -5px;
+        left: 25%;
+    }
+    
+    .info-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 20px;
+    }
+    
+    .info-card {
+        background: #fff;
+        border: 1px solid #ddd;
+        border-radius: 10px;
+        padding: 20px;
+        text-align: center;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        transition: transform 0.3s ease;
+    }
+    
+    .info-card:hover {
+        transform: translateY(-5px);
+    }
+    
+    .card-icon {
+        width: 60px;
+        height: 60px;
+        background: #064b08;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 15px;
+    }
+    
+    .card-icon .icon {
+        font-size: 30px;
+        color: #fff;
+    }
+    
+    .info-card h3 {
+        font-size: 1.3em;
+        color: #333;
+        margin-bottom: 10px;
+    }
+    
+    .info-card p {
+        font-size: 0.9em;
+        color: #666;
+        margin-bottom: 15px;
+    }
+    
+    .read-more {
+        display: inline-block;
+        color: #0b2e0c;
+        text-decoration: none;
+        font-weight: bold;
+    }
+    
+    .read-more:hover {
+        text-decoration: underline;
+    }
+    </style>
+       
+        <!-- Slider with Timer -->
+<section class="tf-slideshow slider-effect-fade slider-camp-and-hike">
+    <div dir="ltr" class="swiper tf-sw-slideshow" data-preview="1.6" data-tablet="1" data-mobile="1" data-centered="true" data-space="30" data-loop="true" data-auto-play="true" data-delay="5000" data-speed="1000">
+        <!-- Progress Bar Timer -->
+        <div class="swiper-pagination-progressbar"></div>
+        
+        <div class="swiper-wrapper">
+            <div class="swiper-slide" lazy="true" style="height: 80%;">
+                <div class="wrap-slider">
+                    <img class="lazyload" data-src="{% static '\images\slider\89.jpg' %}" src="{% static '\images\slider\89.jpg' %}" alt="Smart Agricultural Solutions">
+                    <div class="box-content text-center">
+                        <div class="container">
+                            <h2 class="fade-item fade-item-1 heading text_white fw-5">Smart Agricultural Solutions</h2>
+                            <p class="fade-item fade-item-2 text_white">Show different crop types with optimal environmental conditions</p>
+                            <div class="fade-item fade-item-3">
+                              <a href="{% url 'contact' %}" class="tf-btn btn-outline-light fw-5 btn-xl rounded-0"><span>Contact</span><i class="icon icon-arrow-right"></i></a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="swiper-slide" lazy="true" style="height: 80%;">
+                <div class="wrap-slider">
+                    <img class="lazyload" data-src="{% static '\images\slider\23.jpg' %}" src="{% static '\images\slider\23.jpg' %}" alt="Agricultural Monitoring System">
+                    <div class="box-content text-center">
+                        <div class="container">
+                            <h2 class="fade-item fade-item-1 heading text_white fw-4">Monitoring System</h2>
+                            <p class="fade-item fade-item-2 text_white">Revolutionizing farming with real-time sensor data. Monitor temperature, moisture, and pH levels effortlessly from anywhere.</p>
+                            <div class="fade-item fade-item-3">
+                              <a href="{% url 'contact' %}" class="tf-btn btn-outline-light fw-5 btn-xl rounded-0"><span>Contact</span><i class="icon icon-arrow-right"></i></a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="swiper-slide" lazy="true" style="height: 80%;">
+                <div class="wrap-slider">
+                    <img class="lazyload" data-src="{% static '\images\slider\87.jpg' %}" src="{% static '\images\slider\87.jpg' %}" alt="IoT System Features">
+                    <div class="box-content text-center">
+                        <div class="container">
+                            <h2 class="fade-item fade-item-1 heading text_white fw-4">IoT System Features</h2>
+                            <p class="fade-item fade-item-2 text_white">Briefly describe how the system works (sensor data collection, automation, remote monitoring)</p>
+                            <div class="fade-item fade-item-3">
+                              <a href="{% url 'contact' %}" class="tf-btn btn-outline-light fw-5 btn-xl rounded-0"><span>Contact</span><i class="icon icon-arrow-right"></i></a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="swiper-slide" lazy="true" style="height: 80%;">
+                <div class="wrap-slider">
+                    <img class="lazyload" data-src="{% static '\images\slider\8.jpg' %}" src="{% static '\images\slider\8.jpg' %}" alt="Precision Farming with IoT">
+                    <div class="box-content text-center">
+                        <div class="container">
+                            <h2 class="fade-item fade-item-1 heading text_white fw-4">Precision Farming with IoT</h2>
+                            <p class="fade-item fade-item-2 text_white">Optimize irrigation and enhance soil health with automated data-driven insights</p>
+                            <div class="fade-item fade-item-3">
+                              <a href="{% url 'contact' %}" class="tf-btn btn-outline-light fw-5 btn-xl rounded-0"><span>Contact</span><i class="icon icon-arrow-right"></i></a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="container wrap-navigation">
+        <div class="nav-sw style-white nav-next-slider navigation-next-slider box-icon w_46 round"><span class="icon icon-arrow-left"></span></div>
+        <div class="nav-sw style-white nav-prev-slider navigation-prev-slider box-icon w_46 round"><span class="icon icon-arrow-right"></span></div>
+    </div>
+</section>
+<!-- /Slider -->
+
+        
+        <!-- Banner -->
+        <section class="flat-spacing-4">
+            <div class="container">
+                <div class="tf-grid-layout md-col-2 tf-img-with-text style-5">
+                    <div class="tf-image-wrap widget-video wow fadeInUp clear" data-wow-delay="0s">
+                        <img class="lazyload" data-src="{% static 'images/slider/device1.jpg' %}"
+                             src="{% static 'images/slider/device1.jpg' %}" alt="collection-img">
+                       
+                    </div>
+                    <div class="tf-content-wrap w-100 wow fadeInUp" data-wow-delay="0s">
+                        <span class="sub-heading text-uppercase fw-7 text_green-1">HOW OUR SYSTEM WORKS ?</span>
+                        <div class="heading text_green-1">Data driven smart farming</div>
+                        <p class="description text_green-2" style="text-align: justify;">Agri since uses farm level data to predict ideal growth conditions and resource requirements -
+                            including irrigation, sprays, fertigation and other preventive measures and notify farmers to take informed decisions.
+                            Agri since monitors micro & macro climatic conditions, below the soil parameters, solar conditions, crop stage,
+                            crop growth characteristics, etc. Agri since system continuously checks water availability in the soil to ensure that the
+                            irrigation requirement of the crop is precisely met at all timesbased on crop, its stage, and soil characteristics.</p>
+                        <p class="description text_green-2" style="text-align: justify;">Agri since system continuously checks water availability in the soil to ensure that the irrigation
+                            requirement of the crop is precisely met at all timesbased on crop, its stage, and soil characteristics.</p>
+
+                        <a href="/about" class="tf-btn style-2 btn-fill border-0 radius-60 animate-hover-btn bg_green-9">
+                            Learn more</a>
+                    </div>
+                </div>
+            </div>
+        </section>
+        <!-- /Banner -->
+
+
+<section class="flat-spacing-12 pt_0 mt-4">
+    <div class="container">
+        <div class="tf-grid-layout md-col-2 tf-img-with-text">
+            <div class="tf-image-wrap radius-10 wow fadeInUp" data-wow-delay="0s">
+                <img class="lazyload" data-src="{% static '\images\slider\device3.jpg' %}" src="{% static 'images/slider/device3.jpg' %}" alt="collection-img">
+            </div>
+            <div class="tf-content-wrap wow fadeInUp" data-wow-delay="0s">
+                <div class="heading text_green-1" style="text-align: justify;">Revolutionizing <br> Precision Farming</div>
+                <p class="description text_green-2">
+                    Harness the power of smart agriculture with our advanced system that leverages farm-level data to optimize growth conditions. 
+                    Our technology predicts resource needs including irrigation, fertilization, and pest control measures, empowering farmers with 
+                    real-time insights for informed decision-making. By monitoring micro and macro climatic conditions, soil parameters, solar exposure, 
+                    crop stages, and growth patterns, we ensure precise water management tailored to each crop's specific requirements, soil type, 
+                    and development phase.
+                </p>
+                <a href="#" class="tf-btn style-2 btn-fill radius-60 border-0 animate-hover-btn bg_green-9">Explore Smart Farming</a>
+            </div>
+        </div>
+    </div>
+</section>
+<!-- /Shop Collection -->
+
+
+
+
+            <section class="agriculture-info">
+                <h1>Crop Agri Information</h1>
+                <div class="info-grid">
+                    <!-- Crop Information -->
+                    <div class="info-card">
+                        <div class="card-icon">
+                            <span class="icon notranslate">🌾</span> <!-- Prevent translation -->
+                        </div>
+                        <h3>Crop Information</h3>
+                        <p>Scientific and practical insights for Indian farmers to enhance agricultural productivity.</p>
+                        <a href="{% url 'user_crops' %}" class="read-more">Read More</a>
+                    </div>
+            
+                    <!-- Pest Information -->
+                    <div class="info-card">
+                        <div class="card-icon">
+                            <span class="icon notranslate">🐞</span> <!-- Prevent translation -->
+                        </div>
+                        <h3>Pest Information</h3>
+                        <p>Information on weeds, diseases, insects, and pests affecting crops in India.</p>
+                        <a href="{% url 'user_crops' %}" class="read-more">Read More</a>
+                    </div>
+            
+                    <!-- Crop Protection -->
+                    <div class="info-card">
+                        <div class="card-icon">
+                            <span class="icon notranslate">🛡️</span> <!-- Prevent translation -->
+                        </div>
+                        <h3>Crop Protection</h3>
+                        <p>Learn about herbicides, insecticides, fungicides, and bio-pesticides for crop safety.</p>
+                        <a href="{% url 'user_crops' %}" class="read-more">Read More</a>
+                    </div>
+            
+                    <!-- CropInfo Choupal -->
+                    <div class="info-card">
+                        <div class="card-icon">
+                            <span class="icon notranslate">🤝</span> <!-- Prevent translation -->
+                        </div>
+                        <h3>Best Fertilizers</h3>
+                        <p>Sharing best practices among farmers, cooperatives, and agricultural experts.</p>
+                        <a href="{% url 'user_crops' %}" class="read-more">Read More</a>
+                    </div>
+                </div>
+            </section>
+            
+<!-- Shop Collection -->
+<section class="flat-spacing-12 pt_0 mt-4">
+    <div class="container">
+        <div class="tf-grid-layout md-col-2 tf-img-with-text">
+            <div class="tf-image-wrap radius-10 wow fadeInUp" data-wow-delay="0s">
+                <img class="lazyload" data-src="{% static '\images\slider\farmer.jpg' %}" src="{% static 'images/slider/farmer.jpg' %}" alt="collection-img">
+            </div>
+            <div class="tf-content-wrap wow fadeInUp" data-wow-delay="0s">
+                <div class="heading text_green-1">Boosting Farmer Income with Smart Technology</div>
+                <p class="description text_green-2">
+                    Unlock higher profits with our smart farming device that empowers farmers to make data-driven decisions. By providing real-time insights into soil moisture, temperature, humidity, and pH levels, our technology helps optimize irrigation, fertilization, and pest control, reducing costs and maximizing crop yields. Monitor crop health, predict growth patterns, and ensure efficient resource use—all from your mobile device—leading to increased productivity and a significant boost in income.
+                </p>
+            </div>
+        </div>
+    </div>
+</section>
+<!-- /Shop Collection -->
+            
+
+        <div class="container">
+            <div class="bg_green-9" style="height: 3px;"></div>
+        </div>
+
+        <!-- Iconbox -->
+<div class="container">
+    <div class="custome_container">
+        <section class="flat-spacing-12 bg_white radius-10">
+            <div class="flat-title">
+                <span class="title wow fadeInUp text-center text_green-2" data-wow-delay="0s">We’re solving the biggest problems in agriculture with IoT</span>
+            </div>
+            <div class="wrap-carousel wrap-mobile flat-iconbox-v2 style-2 wow fadeInUp" data-wow-delay="0s">
+                <div dir="ltr" class="swiper tf-sw-mobile-1" data-preview="1" data-space="15">
+                    <div class="swiper-wrapper wrap-iconbox">
+                        <div class="swiper-slide">
+                            <div class="tf-icon-box text-center">
+                                <div class="icon lg">
+                                    <i class="fas fa-desktop text_green-2"></i>
+                                </div>
+                                <div class="content">
+                                    <div class="title text_green-2">Real-Time Monitoring</div>
+                                    <p class="text_green-2">Track soil moisture, temperature, and weather <br> conditions instantly to optimize crop growth.</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="swiper-slide">
+                            <div class="tf-icon-box text-center">
+                                <div class="icon lg">
+                                    <i class="fas fa-leaf text_green-2"></i>
+                                </div>
+                                <div class="content">
+                                    <div class="title text_green-2">Sustainable Farming</div>
+                                    <p class="text_green-2">Use data-driven insights to reduce water waste <br> and improve resource efficiency in your fields.</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="swiper-slide">
+                            <div class="tf-icon-box text-center">
+                                <div class="icon lg">
+                                    <i class="fas fa-expand-arrows-alt text_green-2"></i>
+                                </div>
+                                <div class="content">
+                                    <div class="title text_green-2">Scalable Technology</div>
+                                    <p class="text_green-2">Our IoT systems are designed to grow with your <br> farm, from small plots to large agricultural lands.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </div>
+</div>
+<!-- /Iconbox -->
+{% endblock %}
+    
+
+
+
+
+
+
+
+

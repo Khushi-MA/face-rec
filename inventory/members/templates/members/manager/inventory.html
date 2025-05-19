@@ -1,0 +1,480 @@
+{% extends 'members/manager/base.html' %}
+
+{% block manager_content %}
+<div class="card">
+    <div class="card-header bg-success text-white">
+        <h5 class="mb-0">Inventory Management</h5>
+    </div>
+    <div class="card-body">
+        <!-- Filter Section -->
+        <form method="get" class="mb-4">
+            <div class="row">
+                <div class="col-md-4">
+                    <label for="category" class="form-label">Filter by Category</label>
+                    <select class="form-select" id="category" name="category">
+                        <option value="">All Categories</option>
+                        {% for category in categories %}
+                        <option value="{{ category }}" {% if request.GET.category == category %}selected{% endif %}>{{ category }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-4">
+                    <label for="search" class="form-label">Search by Product Name</label>
+                    <input type="text" class="form-control" id="search" name="search" placeholder="Enter product name" value="{{ request.GET.search }}">
+                </div>
+                <div class="col-md-4 d-flex align-items-end">
+                    <button type="submit" class="btn btn-primary w-100">Apply Filters</button>
+                </div>
+            </div>
+        </form>
+        
+        <div class="d-flex justify-content-between mb-3">
+            <h6>Current Inventory</h6>
+            <button class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#addItemModal">Add New Item</button>
+        </div>
+        <div class="table-responsive">
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>Product ID</th>
+                        <th>Product Name</th>
+                        <th>Category</th>
+                        <th>Current Stock</th>
+                        <th>Reorder Level</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in items %}
+                    <tr>
+                        <td>{{ item.id }}</td>
+                        <td>{{ item.product_name }}</td>
+                        <td>{{ item.category }}</td>
+                        <td>{{ item.current_stock }}</td>
+                        <td>{{ item.reorder_level }}</td>
+                        <td>
+                            {% if item.current_stock <= item.reorder_level %}
+                            <span class="badge bg-danger">Low Stock</span>
+                            {% else %}
+                            <span class="badge bg-success">In Stock</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <button class="btn btn-info btn-sm" onclick="editItem('{{ item.id }}')">Edit</button>
+                            <button class="btn btn-warning btn-sm" onclick="reorderItem('{{ item.id }}')">Reorder</button>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        
+        <!-- Stock Levels by Category Section -->
+        <div class="mt-4">
+            <h5 class="mb-3">Stock Levels by Category</h5>
+            
+            <!-- Summary Cards -->
+            <div class="row mb-4">
+                <div class="col-md-3">
+                    <div class="card bg-primary text-white">
+                        <div class="card-body">
+                            <h6 class="card-title">Total Categories</h6>
+                            <h2 class="mb-0">{{ total_categories }}</h2>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card bg-success text-white">
+                        <div class="card-body">
+                            <h6 class="card-title">Total Stock</h6>
+                            <h2 class="mb-0">{{ total_stock }}</h2>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card bg-warning">
+                        <div class="card-body">
+                            <h6 class="card-title">Low Stock Categories</h6>
+                            <h2 class="mb-0">{{ low_stock_categories }}</h2>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card bg-danger text-white">
+                        <div class="card-body">
+                            <h6 class="card-title">Out of Stock Categories</h6>
+                            <h2 class="mb-0">{{ out_of_stock_categories }}</h2>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Category Details -->
+            <div class="row">
+                {% for category, data in category_totals.items %}
+                <div class="col-md-4 mb-3">
+                    <div class="card h-100">
+                        <div class="card-header {% if data.out_of_stock > 0 %}bg-danger text-white{% elif data.low_stock > 0 %}bg-warning{% else %}bg-success text-white{% endif %}">
+                            <h6 class="mb-0">{{ category }}</h6>
+                        </div>
+                        <div class="card-body">
+                            <div class="d-flex flex-column">
+                                <div class="d-flex justify-content-between mb-2">
+                                    <span>Total Stock:</span>
+                                    <strong>{{ data.total_stock }}</strong>
+                                </div>
+                                <div class="d-flex justify-content-between mb-2">
+                                    <span>Total Items:</span>
+                                    <strong>{{ data.total_items }}</strong>
+                                </div>
+                                <div class="d-flex justify-content-between mb-2">
+                                    <span>Low Stock Items:</span>
+                                    <strong>{{ data.low_stock }}</strong>
+                                </div>
+                                <div class="d-flex justify-content-between">
+                                    <span>Out of Stock:</span>
+                                    <strong>{{ data.out_of_stock }}</strong>
+                                </div>
+                            </div>
+                            <div class="mt-3">
+                                <div class="progress" style="height: 20px;">
+                                    <div class="progress-bar bg-success" role="progressbar" 
+                                         style="--width: {% widthratio data.total_stock total_stock 100 %}%; width: var(--width);" 
+                                         aria-valuenow="{{ data.total_stock }}" 
+                                         aria-valuemin="0" 
+                                         aria-valuemax="{{ total_stock }}">
+                                        {{ data.total_stock }}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="card-footer">
+                            <span class="badge {% if data.out_of_stock > 0 %}bg-danger{% elif data.low_stock > 0 %}bg-warning{% else %}bg-success{% endif %}">
+                                {{ data.status }}
+                            </span>
+                        </div>
+                    </div>
+                </div>
+                {% empty %}
+                <div class="col-12">
+                    <div class="alert alert-warning">
+                        <i class="fas fa-exclamation-triangle me-2"></i>
+                        No categories found in the inventory
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+
+            <!-- Category Summary Table -->
+            <div class="mt-4">
+                <div class="card">
+                    <div class="card-header bg-primary text-white">
+                        <h6 class="mb-0">Category Summary</h6>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0">
+                            <thead>
+                                <tr>
+                                    <th>Category</th>
+                                    <th>Total Stock</th>
+                                    <th>Total Items</th>
+                                    <th>Low Stock</th>
+                                    <th>Out of Stock</th>
+                                    <th>Status</th>
+                                    <th>Stock Level</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for category, data in category_totals.items %}
+                                <tr>
+                                    <td>{{ category }}</td>
+                                    <td>{{ data.total_stock }}</td>
+                                    <td>{{ data.total_items }}</td>
+                                    <td>{{ data.low_stock }}</td>
+                                    <td>{{ data.out_of_stock }}</td>
+                                    <td>
+                                        <span class="badge {% if data.out_of_stock > 0 %}bg-danger{% elif data.low_stock > 0 %}bg-warning{% else %}bg-success{% endif %}">
+                                            {{ data.status }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <div class="progress" style="height: 20px;">
+                                            <div class="progress-bar {% if data.out_of_stock > 0 %}bg-danger{% elif data.low_stock > 0 %}bg-warning{% else %}bg-success{% endif %}" 
+                                                 role="progressbar" 
+                                                 style="--width: {% widthratio data.total_stock total_stock 100 %}%; width: var(--width);" 
+                                                 aria-valuenow="{{ data.total_stock }}" 
+                                                 aria-valuemin="0" 
+                                                 aria-valuemax="{{ total_stock }}">
+                                                {{ data.total_stock }}
+                                            </div>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Add Item Modal -->
+<div class="modal fade" id="addItemModal" tabindex="-1" aria-labelledby="addItemModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="addItemModalLabel">Add New Item</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form method="post" action="{% url 'add_item' %}" enctype="multipart/form-data">
+                {% csrf_token %}
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="product_name" class="form-label">Product Name</label>
+                            <input type="text" class="form-control" id="product_name" name="product_name" required>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="category" class="form-label">Category</label>
+                            <select class="form-select" id="category" name="category" required>
+                                <option value="">Select Category</option>
+                                <option value="Electronics">Electronics</option>
+                                <option value="Clothing">Clothing</option>
+                                <option value="Food">Food Items</option>
+                                <option value="Other">Other</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-4 mb-3">
+                            <label for="quantity" class="form-label">Initial Quantity</label>
+                            <input type="number" class="form-control" id="quantity" name="quantity" min="0" required>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label for="price" class="form-label">Unit Price</label>
+                            <div class="input-group">
+                                <span class="input-group-text">$</span>
+                                <input type="number" class="form-control" id="price" name="price" step="0.01" min="0" required>
+                            </div>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label for="reorder_level" class="form-label">Reorder Level</label>
+                            <input type="number" class="form-control" id="reorder_level" name="reorder_level" min="0" required>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="description" class="form-label">Description</label>
+                        <textarea class="form-control" id="description" name="description" rows="3"></textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label for="product_image" class="form-label">Product Image</label>
+                        <input type="file" class="form-control" id="product_image" name="product_image" accept="image/*">
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="supplier" class="form-label">Supplier</label>
+                            <input type="text" class="form-control" id="supplier" name="supplier">
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="sku" class="form-label">SKU</label>
+                            <input type="text" class="form-control" id="sku" name="sku">
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <div class="form-check">
+                            <input type="checkbox" class="form-check-input" id="active" name="active" checked>
+                            <label class="form-check-label" for="active">Active Item</label>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Add Item</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Edit Item Modal -->
+<div class="modal fade" id="editItemModal" tabindex="-1" aria-labelledby="editItemModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="editItemModalLabel">Edit Item</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form id="editItemForm" method="post" enctype="multipart/form-data">
+                {% csrf_token %}
+                <div class="modal-body">
+                    <!-- Form fields will be populated dynamically -->
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Save Changes</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Reorder Item Modal -->
+<div class="modal fade" id="reorderModal" tabindex="-1" aria-labelledby="reorderModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="reorderModalLabel">Reorder Item</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form id="reorderForm" method="post" action="{% url 'reorder_item' %}">
+                {% csrf_token %}
+                <div class="modal-body">
+                    <input type="hidden" id="reorderItemId" name="item_id">
+                    <div class="mb-3">
+                        <label for="reorderQuantity" class="form-label">Quantity to Order</label>
+                        <input type="number" class="form-control" id="reorderQuantity" name="quantity" min="1" required>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Submit Order</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+{% if messages %}
+<div class="position-fixed bottom-0 end-0 p-3" style="z-index: 11">
+    {% for message in messages %}
+    <div class="toast show" role="alert" aria-live="assertive" aria-atomic="true">
+        <div class="toast-header {% if message.tags %}bg-{{ message.tags }}{% endif %} text-white">
+            <strong class="me-auto">Notification</strong>
+            <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
+        </div>
+        <div class="toast-body">
+            {{ message }}
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% endif %}
+
+<script>
+function editItem(itemId) {
+    fetch(`/manager/edit-item/${itemId}/`)
+        .then(response => response.json())
+        .then(data => {
+            // Populate the edit form with item data
+            const form = document.getElementById('editItemForm');
+            form.action = `/manager/edit-item/${itemId}/`;
+            
+            const modalBody = form.querySelector('.modal-body');
+            modalBody.innerHTML = `
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label for="edit_product_name" class="form-label">Product Name</label>
+                        <input type="text" class="form-control" id="edit_product_name" name="product_name" value="${data.product_name}" required>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label for="edit_category" class="form-label">Category</label>
+                        <select class="form-select" id="edit_category" name="category" required>
+                            <option value="Electronics" ${data.category === 'Electronics' ? 'selected' : ''}>Electronics</option>
+                            <option value="Clothing" ${data.category === 'Clothing' ? 'selected' : ''}>Clothing</option>
+                            <option value="Food" ${data.category === 'Food' ? 'selected' : ''}>Food Items</option>
+                            <option value="Other" ${data.category === 'Other' ? 'selected' : ''}>Other</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-4 mb-3">
+                        <label for="edit_quantity" class="form-label">Quantity</label>
+                        <input type="number" class="form-control" id="edit_quantity" name="quantity" min="0" value="${data.quantity}" required>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label for="edit_price" class="form-label">Unit Price</label>
+                        <div class="input-group">
+                            <span class="input-group-text">$</span>
+                            <input type="number" class="form-control" id="edit_price" name="price" step="0.01" min="0" value="${data.price}" required>
+                        </div>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label for="edit_reorder_level" class="form-label">Reorder Level</label>
+                        <input type="number" class="form-control" id="edit_reorder_level" name="reorder_level" min="0" value="${data.reorder_level}" required>
+                    </div>
+                </div>
+                <div class="mb-3">
+                    <label for="edit_description" class="form-label">Description</label>
+                    <textarea class="form-control" id="edit_description" name="description" rows="3">${data.description || ''}</textarea>
+                </div>
+                <div class="mb-3">
+                    <label for="edit_product_image" class="form-label">Product Image</label>
+                    <input type="file" class="form-control" id="edit_product_image" name="product_image" accept="image/*">
+                    ${data.product_image ? `<p class="mt-2">Current image: ${data.product_image}</p>` : ''}
+                </div>
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label for="edit_supplier" class="form-label">Supplier</label>
+                        <input type="text" class="form-control" id="edit_supplier" name="supplier" value="${data.supplier || ''}">
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label for="edit_sku" class="form-label">SKU</label>
+                        <input type="text" class="form-control" id="edit_sku" name="sku" value="${data.sku || ''}">
+                    </div>
+                </div>
+                <div class="mb-3">
+                    <div class="form-check">
+                        <input type="checkbox" class="form-check-input" id="edit_active" name="active" ${data.active ? 'checked' : ''}>
+                        <label class="form-check-label" for="edit_active">Active Item</label>
+                    </div>
+                </div>
+            `;
+            
+            // Show the modal
+            const modal = new bootstrap.Modal(document.getElementById('editItemModal'));
+            modal.show();
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Error loading item details');
+        });
+}
+
+function reorderItem(itemId) {
+    try {
+        // Set the item ID in the hidden input field
+        const reorderInput = document.getElementById('reorderItemId');
+        if (!reorderInput) {
+            console.error('Reorder input field not found.');
+            return;
+        }
+        reorderInput.value = itemId;
+
+        // Show the modal
+        const modalElement = document.getElementById('reorderModal');
+        if (!modalElement) {
+            console.error('Reorder modal not found.');
+            return;
+        }
+        const modal = new bootstrap.Modal(modalElement);
+        modal.show();
+    } catch (error) {
+        console.error('Error in reorderItem function:', error);
+    }
+}
+
+// Initialize toasts
+document.addEventListener('DOMContentLoaded', function() {
+    var toastElList = [].slice.call(document.querySelectorAll('.toast'));
+    var toastList = toastElList.map(function(toastEl) {
+        return new bootstrap.Toast(toastEl, {
+            autohide: true,
+            delay: 3000
+        });
+    });
+});
+</script>
+{% endblock %}

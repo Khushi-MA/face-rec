@@ -1,0 +1,330 @@
+{% extends 'members/analyst/base.html' %}
+
+{% block extra_css %}
+<style>
+    .metric-card {
+        background-color: white;
+        border-radius: 8px;
+        padding: 20px;
+        margin-bottom: 20px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    .metric-value {
+        font-size: 2rem;
+        font-weight: bold;
+        margin: 10px 0;
+    }
+    .metric-change {
+        font-size: 0.9rem;
+        color: #666;
+    }
+    .change-up { color: #28a745; }
+    .change-down { color: #dc3545; }
+    .chart-container {
+        background-color: white;
+        border-radius: 8px;
+        padding: 20px;
+        margin-bottom: 20px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        height: 400px;
+    }
+    .filter-card {
+        background-color: white;
+        border-radius: 8px;
+        padding: 20px;
+        margin-bottom: 20px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    .table-card {
+        background-color: white;
+        border-radius: 8px;
+        padding: 20px;
+        margin-bottom: 20px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+</style>
+{% endblock %}
+
+{% block analyst_content %}
+<div class="container-fluid">
+    <h2 class="mb-4">Performance Metrics</h2>
+
+    <!-- Filters -->
+    <div class="filter-card">
+        <form method="get" class="row g-3">
+            <div class="col-md-3">
+                <label class="form-label">Period</label>
+                <select name="period" class="form-select">
+                    <option value="weekly" {% if selected_filters.period == 'weekly' %}selected{% endif %}>Weekly</option>
+                    <option value="monthly" {% if selected_filters.period == 'monthly' %}selected{% endif %}>Monthly</option>
+                    <option value="quarterly" {% if selected_filters.period == 'quarterly' %}selected{% endif %}>Quarterly</option>
+                </select>
+            </div>
+            <div class="col-md-3">
+                <label class="form-label">Date Range</label>
+                <div class="input-group">
+                    <input type="date" name="start_date" class="form-control" value="{{ selected_filters.start_date }}">
+                    <span class="input-group-text">to</span>
+                    <input type="date" name="end_date" class="form-control" value="{{ selected_filters.end_date }}">
+                </div>
+            </div>
+            <div class="col-md-3">
+                <label class="form-label">Compare With</label>
+                <select name="compare_with" class="form-select">
+                    <option value="previous" {% if selected_filters.compare_with == 'previous' %}selected{% endif %}>Previous Period</option>
+                    <option value="last_year" {% if selected_filters.compare_with == 'last_year' %}selected{% endif %}>Last Year</option>
+                </select>
+            </div>
+            <div class="col-md-3">
+                <label class="form-label">&nbsp;</label>
+                <button type="submit" class="btn btn-primary d-block w-100">Apply</button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Key Metrics -->
+    <div class="row">
+        <div class="col-md-3">
+            <div class="metric-card">
+                <h5>Sales Performance</h5>
+                <div class="metric-value">{{ metrics.sales_performance }}</div>
+                <div class="metric-change {% if changes.sales_vs > 0 %}change-up{% else %}change-down{% endif %}">
+                    {{ changes.sales_vs }}% vs previous
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="metric-card">
+                <h5>Order Fulfillment</h5>
+                <div class="metric-value">{{ metrics.order_fulfillment }}</div>
+                <div class="metric-change {% if changes.fulfillment_vs > 0 %}change-up{% else %}change-down{% endif %}">
+                    {{ changes.fulfillment_vs }}% vs previous
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="metric-card">
+                <h5>Inventory Turnover</h5>
+                <div class="metric-value">{{ metrics.inventory_turnover }}</div>
+                <div class="metric-change {% if changes.turnover_vs > 0 %}change-up{% else %}change-down{% endif %}">
+                    {{ changes.turnover_vs }}% vs previous
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="metric-card">
+                <h5>Forecast Accuracy</h5>
+                <div class="metric-value">{{ metrics.forecast_accuracy }}</div>
+                <div class="metric-change {% if changes.accuracy_vs > 0 %}change-up{% else %}change-down{% endif %}">
+                    {{ changes.accuracy_vs }}% vs previous
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Performance Trends Chart -->
+    <div class="row">
+        <div class="col-md-8">
+            <div class="chart-container">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h5 class="mb-0">Performance Trends</h5>
+                    <div class="btn-group">
+                        <button type="button" class="btn btn-outline-secondary btn-sm active" data-metric="sales">Sales</button>
+                        <button type="button" class="btn btn-outline-secondary btn-sm" data-metric="orders">Orders</button>
+                        <button type="button" class="btn btn-outline-secondary btn-sm" data-metric="turnover">Turnover</button>
+                    </div>
+                </div>
+                <canvas id="trendsChart"></canvas>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="chart-container">
+                <h5 class="mb-3">Category Performance</h5>
+                <canvas id="categoryChart"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <!-- Detailed Metrics Table -->
+    <div class="table-card">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h5 class="mb-0">Detailed Metrics</h5>
+            <button class="btn btn-outline-primary btn-sm" onclick="exportToCSV()">Export to CSV</button>
+        </div>
+        <div class="table-responsive">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Metric</th>
+                        <th>Current Value</th>
+                        <th>Previous Value</th>
+                        <th>Change</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for metric in detailed_metrics %}
+                    <tr>
+                        <td>{{ metric.metric }}</td>
+                        <td>{{ metric.current_value }}</td>
+                        <td>{{ metric.previous_value }}</td>
+                        <td>{{ metric.change }}</td>
+                        <td>
+                            {% if metric.status == 'up' %}
+                            <span class="text-success">↑</span>
+                            {% elif metric.status == 'down' %}
+                            <span class="text-danger">↓</span>
+                            {% else %}
+                            <span class="text-muted">−</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Performance Trends Chart
+    const trendsCtx = document.getElementById('trendsChart').getContext('2d');
+    const chartData = {
+        labels: {{ chart_data.dates|safe }},
+        datasets: [
+            {
+                label: 'Sales',
+                data: {{ chart_data.sales|safe }},
+                borderColor: 'rgb(75, 192, 192)',
+                tension: 0.1,
+                fill: false,
+                hidden: false
+            },
+            {
+                label: 'Orders',
+                data: {{ chart_data.orders|safe }},
+                borderColor: 'rgb(255, 99, 132)',
+                tension: 0.1,
+                fill: false,
+                hidden: true
+            },
+            {
+                label: 'Turnover',
+                data: {{ chart_data.turnover|safe }},
+                borderColor: 'rgb(255, 205, 86)',
+                tension: 0.1,
+                fill: false,
+                hidden: true
+            }
+        ]
+    };
+
+    const trendsChart = new Chart(trendsCtx, {
+        type: 'line',
+        data: chartData,
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                y: {
+                    beginAtZero: true
+                }
+            },
+            plugins: {
+                tooltip: {
+                    mode: 'index',
+                    intersect: false
+                }
+            }
+        }
+    });
+
+    // Handle metric toggle buttons
+    const metricButtons = document.querySelectorAll('[data-metric]');
+    metricButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            const metric = this.dataset.metric;
+            metricButtons.forEach(btn => btn.classList.remove('active'));
+            this.classList.add('active');
+
+            // Show selected metric and hide others
+            chartData.datasets.forEach(dataset => {
+                dataset.hidden = dataset.label.toLowerCase() !== metric;
+            });
+            trendsChart.update();
+        });
+    });
+
+    // Category Performance Chart
+    const categoryCtx = document.getElementById('categoryChart').getContext('2d');
+    const categoryData = {{ category_performance|safe }};
+    
+    // Ensure we have valid data
+    if (categoryData && categoryData.length > 0) {
+        new Chart(categoryCtx, {
+            type: 'doughnut',
+            data: {
+                labels: categoryData.map(item => item.item__category || 'Uncategorized'),
+                datasets: [{
+                    data: categoryData.map(item => parseFloat(item.sales) || 0),
+                    backgroundColor: [
+                        'rgb(75, 192, 192)',
+                        'rgb(255, 99, 132)',
+                        'rgb(255, 205, 86)',
+                        'rgb(54, 162, 235)',
+                        'rgb(153, 102, 255)',
+                        'rgb(201, 203, 207)',
+                        'rgb(255, 159, 64)'
+                    ]
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'right',
+                        labels: {
+                            boxWidth: 12
+                        }
+                    }
+                }
+            }
+        });
+    } else {
+        // Handle empty data
+        categoryCtx.font = '14px Arial';
+        categoryCtx.fillStyle = '#666';
+        categoryCtx.textAlign = 'center';
+        categoryCtx.fillText('No category data available', categoryCtx.canvas.width / 2, categoryCtx.canvas.height / 2);
+    }
+});
+
+function exportToCSV() {
+    const rows = [
+        ['Metric', 'Current Value', 'Previous Value', 'Change', 'Status']
+    ];
+    
+    document.querySelectorAll('table tbody tr').forEach(row => {
+        const rowData = Array.from(row.cells).map(cell => cell.textContent.trim());
+        rows.push(rowData);
+    });
+    
+    let csvContent = "data:text/csv;charset=utf-8,";
+    rows.forEach(row => {
+        csvContent += row.join(',') + '\n';
+    });
+    
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement('a');
+    link.setAttribute('href', encodedUri);
+    link.setAttribute('download', 'performance_metrics.csv');
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+}
+</script>
+{% endblock %} 

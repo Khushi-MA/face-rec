@@ -1,0 +1,271 @@
+{% extends 'common_links.html' %}
+{% block content %}
+{% load static %}
+<style>
+    .container1 {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      max-width: 980px;
+      width: 100%;
+      background: #49793d;
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      margin: auto;
+      margin-top: 30px;
+      margin-bottom: 20px;
+    }
+  
+    .form-container {
+      width: 100%;
+      padding: 20px;
+      box-sizing: border-box;
+      transition: transform 0.5s ease-in-out;
+    }
+  
+    .illustration {
+      display: none;
+    }
+  
+    .illustration img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+  
+    h2 {
+      font-size: 2rem;
+      color: #f5f5f5;
+      text-align: center;
+      margin-bottom: 20px;
+    }
+
+    .otp-input-container {
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+      margin: 20px 0;
+    }
+
+    .otp-input {
+      width: 50px !important;
+      height: 50px;
+      text-align: center;
+      font-size: 1.5rem;
+      border: 2px solid #ddd;
+      border-radius: 8px;
+      background: #fff;
+      transition: border-color 0.3s;
+    }
+
+    .otp-input:focus {
+      border-color: #1b440f;
+      outline: none;
+    }
+  
+    input {
+      width: 100%;
+      padding: 12px;
+      margin: 8px 0;
+      border: 1px solid #ddd;
+      border-radius: 50px;
+      font-size: 1rem;
+    }
+  
+    button {
+      width: 100%;
+      padding: 12px;
+      margin-top: 20px;
+      border: none;
+      border-radius: 8px;
+      font-size: 1rem;
+      background: #1b440f;
+      color: #ffffff;
+      cursor: pointer;
+      transition: background 0.3s;
+    }
+  
+    button:hover {
+      background: #305e16;
+    }
+  
+    .toggle-link {
+      font-size: 1rem;
+      color: #fcfcfc;
+      text-decoration: none;
+      cursor: pointer;
+      text-align: center;
+      display: block;
+      margin-top: 12px;
+    }
+  
+    .fade-in {
+      animation: fadeIn 0.6s ease;
+    }
+  
+    .error-message {
+      color: rgb(250, 243, 243);
+      font-size: 0.9rem;
+      text-align: center;
+      margin-bottom: 10px;
+    }
+
+    .success-message {
+      color: #4CAF50;
+      font-size: 0.9rem;
+      text-align: center;
+      margin-bottom: 10px;
+    }
+
+    .timer {
+      color: #f5f5f5;
+      text-align: center;
+      margin: 10px 0;
+      font-size: 0.9rem;
+    }
+
+    .resend-link {
+      color: #f5f5f5;
+      text-decoration: underline;
+      cursor: pointer;
+      text-align: center;
+      margin: 10px 0;
+      font-size: 0.9rem;
+    }
+
+    .resend-link:hover {
+      color: #4CAF50;
+    }
+  
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+  
+    @media (min-width: 768px) {
+      .container1 {
+        flex-direction: row;
+        height: 90%;
+      }
+  
+      .illustration {
+        display: block;
+        flex: 0.6;
+      }
+  
+      .form-container {
+        flex: 0.4;
+        padding: 40px;
+      }
+    }
+  
+    .link-row {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      margin-top: 12px;
+    }
+  
+    .link-row .toggle-link {
+      margin: 0 5px;
+      display: inline;
+    }
+</style>
+
+<div class="login-page">
+  <div class="container1">
+    <div class="illustration fade-in">
+      <img src="{% static 'images/slider/2354.jpg' %}" alt="Illustration">
+    </div>
+
+    <div id="formContainer" class="form-container fade-in">
+      <form id="verifyOtpForm" method="post">
+        {% csrf_token %}
+        <h2>Verify OTP</h2>
+        {% if error_message %}
+          <p class="error-message">{{ error_message }}</p>
+        {% endif %}
+        {% if success_message %}
+          <p class="success-message">{{ success_message }}</p>
+        {% endif %}
+        
+        <div class="otp-input-container">
+          <input type="text" class="otp-input" maxlength="1" pattern="[0-9]" inputmode="numeric" required>
+          <input type="text" class="otp-input" maxlength="1" pattern="[0-9]" inputmode="numeric" required>
+          <input type="text" class="otp-input" maxlength="1" pattern="[0-9]" inputmode="numeric" required>
+          <input type="text" class="otp-input" maxlength="1" pattern="[0-9]" inputmode="numeric" required>
+          <input type="text" class="otp-input" maxlength="1" pattern="[0-9]" inputmode="numeric" required>
+          <input type="text" class="otp-input" maxlength="1" pattern="[0-9]" inputmode="numeric" required>
+        </div>
+
+        <div class="timer" id="timer">Time remaining: 5:00</div>
+        <div class="resend-link" id="resendLink" style="display: none;">Resend OTP</div>
+
+        <button type="submit">Verify OTP</button>
+        <div class="link-row">
+          <a href="{% url 'forgot_password' %}" class="toggle-link">Back to Forgot Password</a>
+          <span style="color: #fff; margin: 0 10px;">|</span>
+          <a href="{% url 'login_view' %}" class="toggle-link">Back to Login</a>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const otpInputs = document.querySelectorAll('.otp-input');
+    const form = document.getElementById('verifyOtpForm');
+    const timerElement = document.getElementById('timer');
+    const resendLink = document.getElementById('resendLink');
+    let timeLeft = 300; // 5 minutes in seconds
+
+    // Auto-focus next input
+    otpInputs.forEach((input, index) => {
+        input.addEventListener('input', function() {
+            if (this.value.length === 1) {
+                if (index < otpInputs.length - 1) {
+                    otpInputs[index + 1].focus();
+                }
+            }
+        });
+
+        input.addEventListener('keydown', function(e) {
+            if (e.key === 'Backspace' && !this.value && index > 0) {
+                otpInputs[index - 1].focus();
+            }
+        });
+    });
+
+    // Timer functionality
+    const timer = setInterval(() => {
+        timeLeft--;
+        const minutes = Math.floor(timeLeft / 60);
+        const seconds = timeLeft % 60;
+        timerElement.textContent = `Time remaining: ${minutes}:${seconds.toString().padStart(2, '0')}`;
+
+        if (timeLeft <= 0) {
+            clearInterval(timer);
+            timerElement.style.display = 'none';
+            resendLink.style.display = 'block';
+        }
+    }, 1000);
+
+    // Form submission
+    form.addEventListener('submit', function(e) {
+        e.preventDefault();
+        const otp = Array.from(otpInputs).map(input => input.value).join('');
+        // Add the OTP to a hidden input
+        const hiddenInput = document.createElement('input');
+        hiddenInput.type = 'hidden';
+        hiddenInput.name = 'otp';
+        hiddenInput.value = otp;
+        form.appendChild(hiddenInput);
+        form.submit();
+    });
+});
+</script>
+{% endblock %}

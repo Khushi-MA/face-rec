@@ -1,0 +1,209 @@
+{% extends 'admin1/base.html' %}
+{% load static %}
+
+{% block title %}Add New Crop - Coretronics{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-gray-50 flex items-center justify-center py-8 px-4 sm:px-6 lg:px-8">
+    <div class="w-full max-w-2xl bg-white bg-opacity-90 backdrop-blur-md rounded-xl shadow-[0_4px_15px_rgba(0,0,0,0.1)] p-8 relative overflow-hidden">
+        <!-- Background Texture -->
+        <div class="absolute inset-0 bg-[url('data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22%3E%3Ccircle cx=%2250%22 cy=%2250%22 r=%2240%22 fill=%22none%22 stroke=%22%23a3bffa%22 stroke-width=%220.5%22 opacity=%220.2%22/%3E%3C/svg%22)] opacity-10"></div>
+        
+        <!-- Header -->
+        <h2 class="text-2xl md:text-3xl font-bold text-gray-800 text-center mb-8 relative z-10 animate-fade-in">Add New Crop</h2>
+
+        <!-- Form -->
+        <form method="POST" enctype="multipart/form-data" class="space-y-6 relative z-10">
+            {% csrf_token %}
+
+            <!-- Name -->
+            <div class="form-group">
+                <label class="block text-sm font-semibold text-gray-700 mb-2">Name <span class="text-red-500">*</span></label>
+                <input type="text" name="name" required class="w-full px-4 py-3 border border-gray-200 rounded-lg bg-gray-50 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all duration-200" placeholder="Enter crop name">
+            </div>
+
+            <!-- Scientific Name -->
+            <div class="form-group">
+                <label class="block text-sm font-semibold text-gray-700 mb-2">Scientific Name</label>
+                <input type="text" name="scientific_name" class="w-full px-4 py-3 border border-gray-200 rounded-lg bg-gray-50 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all duration-200" placeholder="Enter scientific name">
+            </div>
+
+            <!-- Crop Type -->
+            <div class="form-group">
+                <label class="block text-sm font-semibold text-gray-700 mb-2">Crop Type</label>
+                <select name="crop_type" class="w-full px-4 py-3 border border-gray-200 rounded-lg bg-gray-50 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all duration-200">
+                    <option value="Cereal">Cereal</option>
+                    <option value="Pulse">Pulse</option>
+                    <option value="Vegetable">Vegetable</option>
+                    <option value="Fruit">Fruit</option>
+                </select>
+            </div>
+
+            <!-- General Information -->
+            <div class="form-group">
+                <label class="block text-sm font-semibold text-gray-700 mb-2">General Information <span class="text-red-500">*</span></label>
+                <textarea name="general_information" required class="w-full px-4 py-3 border border-gray-200 rounded-lg bg-gray-50 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all duration-200 resize-y" rows="4" placeholder="Describe the crop"></textarea>
+            </div>
+
+            <!-- Season -->
+            <div class="form-group">
+                <label class="block text-sm font-semibold text-gray-700 mb-2">Season <span class="text-red-500">*</span></label>
+                <input type="text" name="season" required class="w-full px-4 py-3 border border-gray-200 rounded-lg bg-gray-50 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all duration-200" placeholder="e.g., Summer, Winter">
+            </div>
+
+            <!-- Growth Duration -->
+            <div class="form-group">
+                <label class="block text-sm font-semibold text-gray-700 mb-2">Growth Duration <span class="text-red-500">*</span></label>
+                <input type="text" name="growth_duration" required class="w-full px-4 py-3 border border-gray-200 rounded-lg bg-gray-50 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all duration-200" placeholder="e.g., 90-120 days">
+            </div>
+
+            <!-- Soil Type -->
+            <div class="form-group">
+                <label class="block text-sm font-semibold text-gray-700 mb-2">Soil Type <span class="text-red-500">*</span></label>
+                <textarea name="soil" required class="w-full px-4 py-3 border border-gray-200 rounded-lg bg-gray-50 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all duration-200 resize-y" rows="4" placeholder="e.g., Loamy, well-drained soil"></textarea>
+            </div>
+
+            <!-- pH Level -->
+            <div class="form-group">
+                <label class="block text-sm font-semibold text-gray-700 mb-2">pH Level <span class="text-red-500">*</span></label>
+                <input type="text" name="ph_level" required class="w-full px-4 py-3 border border-gray-200 rounded-lg bg-gray-50 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all duration-200" placeholder="e.g., 6.0-7.5">
+            </div>
+
+            <!-- Temperature Range -->
+            <div class="form-group">
+                <label class="block text-sm font-semibold text-gray-700 mb-2">Temperature Range <span class="text-red-500">*</span></label>
+                <input type="text" name="temperature" required class="w-full px-4 py-3 border border-gray-200 rounded-lg bg-gray-50 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all duration-200" placeholder="e.g., 20°C - 30°C">
+            </div>
+
+            <!-- Rainfall Requirement -->
+            <div class="form-group">
+                <label class="block text-sm font-semibold text-gray-700 mb-2">Rainfall Requirement <span class="text-red-500">*</span></label>
+                <input type="text" name="rainfall" required class="w-full px-4 py-3 border border-gray-200 rounded-lg bg-gray-50 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all duration-200" placeholder="e.g., 500-700 mm">
+            </div>
+
+            <!-- Sowing Temperature -->
+            <div class="form-group">
+                <label class="block text-sm font-semibold text-gray-700 mb-2">Sowing Temperature <span class="text-red-500">*</span></label>
+                <input type="text" name="sowing_temperature" required class="w-full px-4 py-3 border border-gray-200 rounded-lg bg-gray-50 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all duration-200" placeholder="e.g., 25°C">
+            </div>
+
+            <!-- Harvesting Temperature -->
+            <div class="form-group">
+                <label class="block text-sm font-semibold text-gray-700 mb-2">Harvesting Temperature <span class="text-red-500">*</span></label>
+                <input type="text" name="harvesting_temperature" required class="w-full px-4 py-3 border border-gray-200 rounded-lg bg-gray-50 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all duration-200" placeholder="e.g., 20°C">
+            </div>
+
+            <!-- Land Preparation -->
+            <div class="form-group">
+                <label class="block text-sm font-semibold text-gray-700 mb-2">Land Preparation <span class="text-red-500">*</span></label>
+                <textarea name="land_preparation" required class="w-full px-4 py-3 border border-gray-200 rounded-lg bg-gray-50 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all duration-200 resize-y" rows="4" placeholder="Describe land preparation steps"></textarea>
+            </div>
+
+            <!-- Time of Sowing -->
+            <div class="form-group">
+                <label class="block text-sm font-semibold text-gray-700 mb-2">Time of Sowing <span class="text-red-500">*</span></label>
+                <input type="text" name="time_of_sowing" required class="w-full px-4 py-3 border border-gray-200 rounded-lg bg-gray-50 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all duration-200" placeholder="e.g., March-April">
+            </div>
+
+            <!-- Spacing -->
+            <div class="form-group">
+                <label class="block text-sm font-semibold text-gray-700 mb-2">Spacing <span class="text-red-500">*</span></label>
+                <textarea name="spacing" required class="w-full px-4 py-3 border border-gray-200 rounded-lg bg-gray-50 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all duration-200 resize-y" rows="4" placeholder="e.g., 30 cm x 15 cm"></textarea>
+            </div>
+
+            <!-- Method of Sowing -->
+            <div class="form-group">
+                <label class="block text-sm font-semibold text-gray-700 mb-2">Method of Sowing <span class="text-red-500">*</span></label>
+                <input type="text" name="method_of_sowing" required class="w-full px-4 py-3 border border-gray-200 rounded-lg bg-gray-50 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all duration-200" placeholder="e.g., Broadcasting">
+            </div>
+
+            <!-- Sowing Depth -->
+            <div class="form-group">
+                <label class="block text-sm font-semibold text-gray-700 mb-2">Sowing Depth <span class="text-red-500">*</span></label>
+                <input type="text" name="sowing_depth" required class="w-full px-4 py-3 border border-gray-200 rounded-lg bg-gray-50 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all duration-200" placeholder="e.g., 5-7 cm">
+            </div>
+
+            <!-- Seed Rate -->
+            <div class="form-group">
+                <label class="block text-sm font-semibold text-gray-700 mb-2">Seed Rate <span class="text-red-500">*</span></label>
+                <input type="text" name="seed_rate" required class="w-full px-4 py-3 border border-gray-200 rounded-lg bg-gray-50 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all duration-200" placeholder="e.g., 10 kg/ha">
+            </div>
+
+            <!-- Seed Treatment -->
+            <div class="form-group">
+                <label class="block text-sm font-semibold text-gray-700 mb-2">Seed Treatment <span class="text-red-500">*</span></label>
+                <textarea name="seed_treatment" required class="w-full px-4 py-3 border border-gray-200 rounded-lg bg-gray-50 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all duration-200 resize-y" rows="4" placeholder="Describe seed treatment process"></textarea>
+            </div>
+
+            <!-- Weed Control -->
+            <div class="form-group">
+                <label class="block text-sm font-semibold text-gray-700 mb-2">Weed Control</label>
+                <textarea name="weed_control" class="w-full px-4 py-3 border border-gray-200 rounded-lg bg-gray-50 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all duration-200 resize-y" rows="4" placeholder="Describe weed control methods"></textarea>
+            </div>
+
+            <!-- Irrigation Requirement -->
+            <div class="form-group">
+                <label class="block text-sm font-semibold text-gray-700 mb-2">Irrigation Requirement <span class="text-red-500">*</span></label>
+                <textarea name="irrigation" required class="w-full px-4 py-3 border border-gray-200 rounded-lg bg-gray-50 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all duration-200 resize-y" rows="4" placeholder="Describe irrigation needs"></textarea>
+            </div>
+
+            <!-- Insecticide Name -->
+            <div class="form-group">
+                <label class="block text-sm font-semibold text-gray-700 mb-2">Insecticide Name</label>
+                <input type="text" name="insecticide_name" class="w-full px-4 py-3 border border-gray-200 rounded-lg bg-gray-50 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all duration-200" placeholder="Enter insecticide name">
+            </div>
+
+            <!-- Quantity -->
+            <div class="form-group">
+                <label class="block text-sm font-semibold text-gray-700 mb-2">Quantity</label>
+                <input type="text" name="quantity" class="w-full px-4 py-3 border border-gray-200 rounded-lg bg-gray-50 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all duration-200" placeholder="e.g., 2 liters/ha">
+            </div>
+
+            <!-- Harvesting Time -->
+            <div class="form-group">
+                <label class="block text-sm font-semibold text-gray-700 mb-2">Harvesting Time <span class="text-red-500">*</span></label>
+                <input type="text" name="harvesting_time" required class="w-full px-4 py-3 border border-gray-200 rounded-lg bg-gray-50 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all duration-200" placeholder="e.g., October-November">
+            </div>
+
+            <!-- Yield Per Hectare -->
+            <div class="form-group">
+                <label class="block text-sm font-semibold text-gray-700 mb-2">Yield Per Hectare <span class="text-red-500">*</span></label>
+                <input type="text" name="yield_per_hectare" required class="w-full px-4 py-3 border border-gray-200 rounded-lg bg-gray-50 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all duration-200" placeholder="e.g., 5 tons/ha">
+            </div>
+
+            <!-- Post Harvest Handling -->
+            <div class="form-group">
+                <label class="block text-sm font-semibold text-gray-700 mb-2">Post Harvest Handling</label>
+                <textarea name="post_harvest_handling" class="w-full px-4 py-3 border border-gray-200 rounded-lg bg-gray-50 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all duration-200 resize-y" rows="4" placeholder="Describe post-harvest handling"></textarea>
+            </div>
+
+            <!-- Image -->
+            <div class="form-group">
+                <label class="block text-sm font-semibold text-gray-700 mb-2">Image</label>
+                <input type="file" name="image" class="w-full px-4 py-3 border border-gray-200 rounded-lg bg-gray-50 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all duration-200">
+            </div>
+
+            <!-- Submit Button -->
+            <button type="submit" class="w-full bg-gradient-to-r from-emerald-500 to-teal-500 text-white py-3 rounded-lg font-semibold text-lg hover:from-emerald-600 hover:to-teal-600 transition-all duration-300 shadow-md hover:shadow-lg">Add Crop</button>
+        </form>
+    </div>
+</div>
+
+<style>
+    @keyframes fade-in {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+    .animate-fade-in { animation: fade-in 0.5s ease-out; }
+
+    /* Input validation styles */
+    input:invalid:not(:focus), textarea:invalid:not(:focus) {
+        border-color: #f87171;
+        background-color: #fef2f2;
+    }
+    input:valid, textarea:valid {
+        border-color: #10b981;
+        background-color: #f0fdf4;
+    }
+</style>
+{% endblock %}

@@ -1,0 +1,172 @@
+{% extends 'members/base.html' %}
+
+{% block title %}Dashboard - Inventory System{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h1 class="mb-4">Dashboard</h1>
+    
+    <!-- User Info Card -->
+    <div class="row mb-4">
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Welcome, {{ user.username }}</h5>
+                    <p class="card-text">Role: {{ user.get_role_display }}</p>
+                    <p class="card-text">Email: {{ user.email }}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Admin Dashboard -->
+    {% if is_admin %}
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">Admin Controls</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="card">
+                                <div class="card-body">
+                                    <h5 class="card-title">User Management</h5>
+                                    <div class="d-grid gap-2">
+                                        <a href="{% url 'manage_users' %}" class="btn btn-primary">Manage Users</a>
+                                        <a href="{% url 'user_logs' %}" class="btn btn-info">View User Logs</a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="card">
+                                <div class="card-body">
+                                    <h5 class="card-title">System Settings</h5>
+                                    <div class="d-grid gap-2">
+                                        <a href="{% url 'system_settings' %}" class="btn btn-primary">Configure System</a>
+                                        <a href="{% url 'system_logs' %}" class="btn btn-info">View System Logs</a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="card">
+                                <div class="card-body">
+                                    <h5 class="card-title">Reports</h5>
+                                    <div class="d-grid gap-2">
+                                        <a href="{% url 'admin_reports' %}" class="btn btn-primary">Generate Reports</a>
+                                        <a href="{% url 'admin_analytics' %}" class="btn btn-info">View Analytics</a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Manager Dashboard -->
+    {% if is_manager %}
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0">Inventory Management</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="card">
+                                <div class="card-body">
+                                    <h5 class="card-title">Stock Management</h5>
+                                    <div class="d-grid gap-2">
+                                        <a href="{% url 'view_inventory' %}" class="btn btn-primary">View Inventory</a>
+                                        <a href="{% url 'add_item' %}" class="btn btn-info">Add New Items</a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="card">
+                                <div class="card-body">
+                                    <h5 class="card-title">Orders</h5>
+                                    <div class="d-grid gap-2">
+                                        <a href="{% url 'manage_orders' %}" class="btn btn-primary">Manage Orders</a>
+                                        <a href="{% url 'order_history' %}" class="btn btn-info">View Order History</a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="card">
+                                <div class="card-body">
+                                    <h5 class="card-title">Reports</h5>
+                                    <div class="d-grid gap-2">
+                                        <a href="{% url 'stock_reports' %}" class="btn btn-primary">Stock Reports</a>
+                                        <a href="{% url 'sales_reports' %}" class="btn btn-info">Sales Reports</a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Analyst Dashboard -->
+    {% if is_analyst %}
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0">Analytics Dashboard</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="card">
+                                <div class="card-body">
+                                    <h5 class="card-title">Demand Forecasting</h5>
+                                    <div class="d-grid gap-2">
+                                        <a href="{% url 'view_forecasts' %}" class="btn btn-primary">View Forecasts</a>
+                                        <a href="{% url 'generate_predictions' %}" class="btn btn-info">Generate Predictions</a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="card">
+                                <div class="card-body">
+                                    <h5 class="card-title">Trend Analysis</h5>
+                                    <div class="d-grid gap-2">
+                                        <a href="{% url 'sales_trends' %}" class="btn btn-primary">Sales Trends</a>
+                                        <a href="{% url 'inventory_trends' %}" class="btn btn-info">Inventory Trends</a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="card">
+                                <div class="card-body">
+                                    <h5 class="card-title">Reports</h5>
+                                    <div class="d-grid gap-2">
+                                        <a href="{% url 'analytics_reports' %}" class="btn btn-primary">Analytics Reports</a>
+                                        <a href="{% url 'performance_metrics' %}" class="btn btn-info">Performance Metrics</a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %} 

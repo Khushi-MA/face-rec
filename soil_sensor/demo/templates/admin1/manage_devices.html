@@ -1,0 +1,140 @@
+{% extends 'admin1/base.html' %}
+{% block content %}
+<div class="container mt-5">
+  <h2 class="text-center mb-4">Manage Devices and Subscriptions for {{ user.username }}</h2>
+
+  <table class="table table-hover table-bordered">
+    <thead style="background-color: #24beed; color: white;">
+      <tr>
+        <th>Device ID</th>
+        <th>Device Name</th>
+        <th> Days</th>
+        <th>Subscription End</th>
+        <th>Status</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for device in devices %}
+      <tr>
+        <td>{{ device.id }}</td>
+
+        <!-- Editable Device Name -->
+        <td>
+          <form method="POST" action="{% url 'manage_devices' user.id %}">
+            {% csrf_token %}
+            <input type="hidden" name="device_id" value="{{ device.id }}">
+            <input type="text" name="device_name" class="form-control" value="{{ device.device_name }}" required>
+        </td>
+
+        <!-- Editable Subscription Days -->
+        <td>
+          <input type="number" name="subscription_days" class="form-control" value="{{ device.days_remaining }}" min="0">
+        </td>
+        <td>
+          <p>{{ device.subscription_end_date }}</p>
+        </td>
+
+        <!-- Device Status (Active/Inactive Toggle) -->
+        <td class="text-center">
+          <label class="switch">
+            <input type="checkbox" name="device_status" {% if device.is_active %}checked{% endif %} onchange="toggleStatus(this, {{ device.id }})">
+            <span class="slider round"></span>
+          </label>
+          <br>
+          <span id="status-{{ device.id }}" class="badge {% if device.is_active %}badge-success{% else %}badge-danger{% endif %}">
+            {% if device.is_active %} Active {% else %} Inactive {% endif %}
+          </span>
+        </td>
+
+        <td>
+          <button type="submit" class="btn btn-success btn-sm">Update</button>
+          </form>
+          <a href="{% url 'delete_device' device.id %}" class="btn btn-danger btn-sm" onclick="return confirm('Are you sure you want to delete this device?');">Delete</a>
+        </td>
+      </tr>
+      {% empty %}
+      <tr>
+        <td colspan="5" class="text-center">No devices found for this user.</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+  <a href="{% url 'view_customers' %}" class="btn btn-secondary">Back to Customer List</a>
+</div>
+
+<!-- Add CSS for toggle switch -->
+<style>
+  .switch {
+    position: relative;
+    display: inline-block;
+    width: 34px;
+    height: 20px;
+  }
+
+  .switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+  }
+
+  .slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: #ccc;
+    transition: .4s;
+    border-radius: 10px;
+  }
+
+  .slider:before {
+    position: absolute;
+    content: "";
+    height: 12px;
+    width: 12px;
+    left: 4px;
+    bottom: 4px;
+    background-color: white;
+    transition: .4s;
+    border-radius: 50%;
+  }
+
+  input:checked + .slider {
+    background-color: #28a745; /* Green for Active */
+  }
+
+  input:checked + .slider:before {
+    transform: translateX(14px);
+  }
+
+  .badge-success {
+    background-color: #28a745 !important; /* Green */
+    color: white !important;
+  }
+
+  .badge-danger {
+    background-color: #dc3545 !important; /* Red */
+    color: white !important;
+  }
+</style>
+
+<!-- JavaScript to Change Color on Toggle -->
+<script>
+  function toggleStatus(checkbox, deviceId) {
+    var statusText = document.getElementById("status-" + deviceId);
+    
+    if (checkbox.checked) {
+      statusText.className = "badge badge-success";
+      statusText.innerText = "Active";
+    } else {
+      statusText.className = "badge badge-danger";
+      statusText.innerText = "Inactive";
+    }
+  }
+</script>
+
+{% endblock %}

@@ -1,0 +1,125 @@
+{% extends 'common_links.html' %}
+{% block content %}
+
+
+      <!-- map -->
+      <section class="flat-spacing-9">
+          <div class="container">
+              <div class="tf-grid-layout gap-0 lg-col-2">
+                  <div class="w-100">
+                    <iframe 
+                        src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3919.975487644547!2d75.1272719!3d15.3591153!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3bb8d75dffa37021%3A0x60cdf21e10b0ff58!2sStellar%20Mall%2C%20Jaya%20Nagar%2C%20Hubli!5e0!3m2!1sen!2sin!4v1711385123456"
+                        width="100%" height="504" style="border:0;" allowfullscreen="" loading="lazy">
+                    </iframe>
+
+
+                  </div>
+                  <div class="tf-content-left has-mt">
+                      <div class="sticky-top">
+                          <h5 class="mb_20">Visit Our Store</h5>
+                          <div class="mb_20">
+                            <p class="mb_15"><strong>Address</strong></p>
+                            <p>HAEGL TECHNOLOGIES PVT LTD,
+                                1st Floor, AKALWADI MANSION, Vidyanagar, Hubballi, Karnataka 580021</p>
+                        </div>
+                        <div class="mb_20">
+                            <p class="mb_15"><strong>Email</strong></p>
+                            <p><a href="mailto:HR@naturalfoodindustries.com">haegl@gmail.com</a></p>
+                        </div>
+                        <div class="mb_20">
+                            <p class="mb_15"><strong>Phone</strong></p>
+                            <p><a href="tel:+917200997585">(+91) 959 0499 570</a></p>
+                        </div>
+
+                          <div>
+                               <ul class="tf-social-icon d-flex gap-10 style-default">
+                                  <li><a href="#" class="box-icon w_34 round social-facebook social-line"><i class="icon fs-14 icon-fb"></i></a></li>
+                                  <li><a href="#" class="box-icon w_34 round social-twiter social-line"><i class="icon fs-12 icon-Icon-x"></i></a></li>
+                                  <li><a href="#" class="box-icon w_34 round social-instagram social-line"><i class="icon fs-14 icon-instagram"></i></a></li>
+                              </ul>
+                          </div>
+                      </div>
+                  </div>
+              </div>
+          </div>
+      </section>
+      <!-- /map -->
+      <!-- form -->
+      <section class="bg_grey-7 flat-spacing-9">
+          <div class="container">
+              <div class="flat-title">
+                  <span class="title">Get in Touch</span>
+                  <p class="sub-title text_black-2">If you’ve got great products your making or looking to work with us then drop us a line.</p>
+              </div>
+              <div>
+                <form id="contactForm">
+                  {% csrf_token %}
+                  <div class="d-flex gap-15 mb_15">
+                      <fieldset class="w-100">
+                          <input type="text" name="name" id="name" required placeholder="Name *"/>
+                      </fieldset>
+                      <fieldset class="w-100">
+                          <input type="email" name="email" id="email" required placeholder="Email *"/>
+                      </fieldset>
+                  </div>
+                  <div class="mb_15">
+                      <textarea placeholder="Message" name="message" id="message" required cols="30" rows="10"></textarea>
+                  </div>
+                  <div class="send-wrap">
+                      <button type="submit" class="tf-btn radius-3 btn-fill animate-hover-btn justify-content-center">Send</button>
+                  </div>
+              </form>
+              
+              
+              
+              </div>
+          </div>
+      </section>
+      <!-- /form -->
+       <!-- AJAX & SweetAlert -->
+       <script>
+        document.getElementById("contactForm").addEventListener("submit", function(event) {
+            event.preventDefault();
+    
+            let formData = new FormData(this);
+    
+            fetch("{% url 'contact' %}", {  // Uses the same URL for submission
+                method: "POST",
+                body: formData,
+                headers: {
+                    "X-CSRFToken": "{{ csrf_token }}"
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    Swal.fire({
+                        icon: "success",
+                        title: "Message Sent!",
+                        text: data.message,
+                        showConfirmButton: false,
+                        timer: 2000
+                    }).then(() => {
+                        document.getElementById("contactForm").reset();
+                    });
+                } else {
+                    Swal.fire({
+                        icon: "error",
+                        title: "Error!",
+                        text: data.message,
+                        showConfirmButton: true
+                    });
+                }
+            })
+            .catch(error => {
+                console.error("Error:", error);
+                Swal.fire({
+                    icon: "error",
+                    title: "Something went wrong!",
+                    text: "Please try again later.",
+                    showConfirmButton: true
+                });
+            });
+        });
+    </script>
+{% endblock %}

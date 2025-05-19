@@ -1,0 +1,327 @@
+{% extends 'members/admin/base.html' %}
+
+{% block extra_css %}
+<style>
+    .report-card {
+        background-color: white;
+        border-radius: 8px;
+        padding: 20px;
+        margin-bottom: 20px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    .metric-value {
+        font-size: 2rem;
+        font-weight: bold;
+        color: #2c3e50;
+    }
+    .metric-label {
+        color: #7f8c8d;
+        font-size: 0.9rem;
+    }
+    .chart-container {
+        height: 300px;
+        margin-bottom: 20px;
+    }
+    .status-badge {
+        padding: 0.25rem 0.5rem;
+        border-radius: 4px;
+        font-size: 0.875rem;
+    }
+    .status-success { background-color: #d4edda; color: #155724; }
+    .status-warning { background-color: #fff3cd; color: #856404; }
+    .status-danger { background-color: #f8d7da; color: #721c24; }
+</style>
+{% endblock %}
+
+{% block admin_content %}
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>System Reports</h2>
+        <div class="btn-group">
+            <button class="btn btn-outline-primary" onclick="exportReport('system')">Export System Report</button>
+            <button class="btn btn-outline-primary" onclick="exportReport('activity')">Export Activity Log</button>
+        </div>
+    </div>
+
+    <!-- System Health Overview -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="report-card">
+                <div class="metric-label">CPU Usage</div>
+                <div class="metric-value">{{ system_metrics.cpu_usage }}%</div>
+                <div class="progress mt-2" style="height: 4px;">
+                    <div class="progress-bar" role="progressbar" style="width: {{ system_metrics.cpu_usage }}%"></div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="report-card">
+                <div class="metric-label">Memory Usage</div>
+                <div class="metric-value">{{ system_metrics.memory_usage }}%</div>
+                <div class="progress mt-2" style="height: 4px;">
+                    <div class="progress-bar" role="progressbar" style="width: {{ system_metrics.memory_usage }}%"></div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="report-card">
+                <div class="metric-label">Storage Usage</div>
+                <div class="metric-value">{{ system_metrics.storage_usage }}%</div>
+                <div class="progress mt-2" style="height: 4px;">
+                    <div class="progress-bar" role="progressbar" style="width: {{ system_metrics.storage_usage }}%"></div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="report-card">
+                <div class="metric-label">System Uptime</div>
+                <div class="metric-value">{{ system_metrics.uptime }}</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Performance Metrics -->
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <div class="report-card">
+                <h5 class="mb-3">System Performance Trend</h5>
+                <div class="chart-container">
+                    <canvas id="performanceChart"></canvas>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="report-card">
+                <h5 class="mb-3">Resource Distribution</h5>
+                <div class="chart-container">
+                    <canvas id="resourceChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Activity Log -->
+    <div class="report-card">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h5 class="mb-0">System Activity Log</h5>
+            <div class="btn-group">
+                <button class="btn btn-sm btn-outline-secondary" onclick="filterLogs('all')">All</button>
+                <button class="btn btn-sm btn-outline-secondary" onclick="filterLogs('error')">Errors</button>
+                <button class="btn btn-sm btn-outline-secondary" onclick="filterLogs('warning')">Warnings</button>
+            </div>
+        </div>
+        <div class="table-responsive">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Timestamp</th>
+                        <th>Event</th>
+                        <th>Component</th>
+                        <th>Status</th>
+                        <th>Details</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for log in activity_logs %}
+                    <tr>
+                        <td>{{ log.timestamp }}</td>
+                        <td>{{ log.event }}</td>
+                        <td>{{ log.component }}</td>
+                        <td>
+                            <span class="status-badge status-{{ log.status }}">
+                                {{ log.status }}
+                            </span>
+                        </td>
+                        <td>{{ log.details }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Performance Trend Chart
+    const perfCtx = document.getElementById('performanceChart').getContext('2d');
+    const perfChart = new Chart(perfCtx, {
+        type: 'line',
+        data: {
+            labels: {{ performance_data.labels|safe }},
+            datasets: [{
+                label: 'CPU Usage',
+                data: {{ performance_data.cpu|safe }},
+                borderColor: 'rgb(75, 192, 192)',
+                tension: 0.1
+            }, {
+                label: 'Memory Usage',
+                data: {{ performance_data.memory|safe }},
+                borderColor: 'rgb(255, 99, 132)',
+                tension: 0.1
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    max: 100
+                }
+            }
+        }
+    });
+
+    // Resource Distribution Chart
+    const resCtx = document.getElementById('resourceChart').getContext('2d');
+    const resChart = new Chart(resCtx, {
+        type: 'doughnut',
+        data: {
+            labels: ['CPU', 'Memory', 'Storage', 'Network'],
+            datasets: [{
+                data: [
+                    {{ system_metrics.cpu_usage }},
+                    {{ system_metrics.memory_usage }},
+                    {{ system_metrics.storage_usage }},
+                    {{ system_metrics.network_usage|default:0 }}
+                ],
+                backgroundColor: [
+                    'rgb(75, 192, 192)',
+                    'rgb(255, 99, 132)',
+                    'rgb(255, 205, 86)',
+                    'rgb(54, 162, 235)'
+                ]
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false
+        }
+    });
+
+    // Initialize active state for "All" filter button
+    document.querySelector('[onclick="filterLogs(\'all\')"]').classList.add('active');
+});
+
+function filterLogs(type) {
+    // Get all log rows
+    const rows = document.querySelectorAll('table tbody tr');
+    
+    // Update active state of filter buttons
+    document.querySelectorAll('.btn-group .btn').forEach(btn => {
+        btn.classList.remove('active');
+    });
+    event.currentTarget.classList.add('active');
+    
+    // Show/hide rows based on filter
+    rows.forEach(row => {
+        const statusCell = row.querySelector('td:nth-child(4)');
+        const status = statusCell.textContent.trim().toLowerCase();
+        
+        if (type === 'all') {
+            row.style.display = '';
+        } else {
+            row.style.display = status.includes(type.toLowerCase()) ? '' : 'none';
+        }
+    });
+}
+
+function exportReport(type) {
+    let data = [];
+    let filename = '';
+    
+    if (type === 'system') {
+        // Export system metrics
+        data = [
+            ['Metric', 'Value'],
+            ['CPU Usage', '{{ system_metrics.cpu_usage }}%'],
+            ['Memory Usage', '{{ system_metrics.memory_usage }}%'],
+            ['Storage Usage', '{{ system_metrics.storage_usage }}%'],
+            ['System Uptime', '{{ system_metrics.uptime }}'],
+            ['Network Usage', '{{ system_metrics.network_usage|default:0 }}%']
+        ];
+        
+        // Add performance trend data
+        data.push(['']);
+        data.push(['Time', 'CPU Usage', 'Memory Usage']);
+        const labels = {{ performance_data.labels|safe }};
+        const cpuData = {{ performance_data.cpu|safe }};
+        const memoryData = {{ performance_data.memory|safe }};
+        
+        for (let i = 0; i < labels.length; i++) {
+            data.push([labels[i], cpuData[i] + '%', memoryData[i] + '%']);
+        }
+        
+        filename = 'system_report_' + new Date().toISOString().split('T')[0] + '.csv';
+    } else {
+        // Export activity logs
+        data = [['Timestamp', 'Event', 'Component', 'Status', 'Details']];
+        
+        // Only export visible rows (respecting current filter)
+        document.querySelectorAll('table tbody tr').forEach(row => {
+            if (row.style.display !== 'none') {
+                const cells = row.querySelectorAll('td');
+                data.push([
+                    cells[0].textContent.trim(),
+                    cells[1].textContent.trim(),
+                    cells[2].textContent.trim(),
+                    cells[3].textContent.trim(),
+                    cells[4].textContent.trim()
+                ]);
+            }
+        });
+        
+        filename = 'activity_log_' + new Date().toISOString().split('T')[0] + '.csv';
+    }
+    
+    // Convert to CSV and trigger download
+    let csvContent = "data:text/csv;charset=utf-8,";
+    data.forEach(row => {
+        csvContent += row.map(cell => `"${cell}"`).join(',') + '\n';
+    });
+    
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement('a');
+    link.setAttribute('href', encodedUri);
+    link.setAttribute('download', filename);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+}
+
+// Auto-refresh functionality
+let refreshInterval;
+
+function startAutoRefresh(interval = 30000) { // 30 seconds
+    if (refreshInterval) {
+        clearInterval(refreshInterval);
+    }
+    refreshInterval = setInterval(() => {
+        location.reload();
+    }, interval);
+}
+
+function stopAutoRefresh() {
+    if (refreshInterval) {
+        clearInterval(refreshInterval);
+    }
+}
+
+// Start auto-refresh when page loads
+document.addEventListener('DOMContentLoaded', function() {
+    startAutoRefresh();
+});
+
+// Stop auto-refresh when page is not visible
+document.addEventListener('visibilitychange', function() {
+    if (document.hidden) {
+        stopAutoRefresh();
+    } else {
+        startAutoRefresh();
+    }
+});
+</script>
+{% endblock %} 

@@ -1,0 +1,28 @@
+{% extends 'members/base.html' %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-3">
+            <div class="card">
+                <div class="card-header bg-info text-white">
+                    Analyst Menu
+                </div>
+                <div class="list-group list-group-flush">
+                    <a href="{% url 'view_forecasts' %}" class="list-group-item list-group-item-action">View Forecasts</a>
+                    <a href="{% url 'generate_predictions' %}" class="list-group-item list-group-item-action">Generate Predictions</a>
+                    <a href="{% url 'sales_trends' %}" class="list-group-item list-group-item-action">Sales Trends</a>
+                    <a href="{% url 'inventory_trends' %}" class="list-group-item list-group-item-action">Inventory Trends</a>
+                    <a href="{% url 'analytics_reports' %}" class="list-group-item list-group-item-action">Analytics Reports</a>
+                    <a href="{% url 'performance_metrics' %}" class="list-group-item list-group-item-action">Performance Metrics</a>
+                    <a href="{% url 'dashboard' %}" class="list-group-item list-group-item-action">Back to Dashboard</a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-9">
+            {% block analyst_content %}
+            {% endblock %}
+        </div>
+    </div>
+</div>
+{% endblock %} 

@@ -1,0 +1,112 @@
+{% extends 'dashboard.html' %}
+{% load static %}
+
+{% block extra_css %}
+<link href="{% static 'css/chat.css' %}" rel="stylesheet">
+{% endblock %}
+
+{% block content %}
+<div class="container mt-5 position-relative">
+
+  <h2 class="text-center mb-4">Hand fracture</h2>
+
+  <!-- Image upload form -->
+  <p>Upload an Image for Analysis</p>
+  <form id="imageUploadForm" enctype="multipart/form-data" method="POST" action="{% url 'upload_image_api_hand' %}">
+    {% csrf_token %}
+    <div class="form-group">
+      <input type="file" name="image" id="imageInput" class="form-control" accept="image/*" required>
+    </div>
+    <button type="submit" class="btn btn-primary mt-2">Upload and Analyze</button>
+  </form>
+
+  <!-- API result display -->
+  {% if api_result_hand %}
+  <div class="mt-4">
+    <h4>Result:</h4>
+    <pre>{{ api_result_hand }}</pre>
+  </div>
+  {% endif %}
+
+  <hr class="my-4">
+
+  <!-- Chatbox -->
+  <div id="chatBox" class="d-flex flex-column"></div>
+
+  <!-- Recording status -->
+  <p id="recordingIndicator" style="display: none;">🎤 Listening... Please speak.</p>
+
+  <!-- Chat form -->
+  <form id="chatForm" onsubmit="sendMessage(event)" style="margin-bottom: 20px;">
+    <input type="text" id="userInput" placeholder="Type your message..." />
+    <button type="submit">Send</button>
+    <button type="button" onclick="startRecording()">🎤 Speak</button>
+  </form>
+</div>
+
+<script>
+  function sendMessage(event) {
+    if (event) event.preventDefault();
+    const input = document.getElementById("userInput");
+    const message = input.value.trim();
+    if (!message) return;
+
+    const chatBox = document.getElementById("chatBox");
+
+    // Add user message to chatbox
+    const userMessage = document.createElement("div");
+    userMessage.className = "chat-message user";
+    userMessage.innerHTML = `<b>You:</b> ${message}`;
+    chatBox.appendChild(userMessage);
+
+    input.value = "";
+
+    // Fetch bot response
+    fetch("/chatbot_hand/?message=" + encodeURIComponent(message))
+      .then(response => response.json())
+      .then(data => {
+        const botMessage = document.createElement("div");
+        botMessage.className = "chat-message bot";
+        botMessage.innerHTML = `<b>Bot:</b> ${data.response}`;
+        chatBox.appendChild(botMessage);
+        chatBox.scrollTop = chatBox.scrollHeight;
+      });
+  }
+
+  // 🎤 Speech-to-text logic
+  let recognition;
+  function startRecording() {
+    if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
+      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+      recognition = new SpeechRecognition();
+      recognition.continuous = false;
+      recognition.lang = 'en-US';
+      recognition.interimResults = false;
+
+      recognition.onstart = function () {
+        document.getElementById('recordingIndicator').style.display = 'block';
+      };
+
+      recognition.onresult = function (event) {
+        const transcript = event.results[0][0].transcript;
+        document.getElementById('userInput').value = transcript;
+        sendMessage();
+        document.getElementById('recordingIndicator').style.display = 'none';
+      };
+
+      recognition.onerror = function (event) {
+        alert('Speech recognition error: ' + event.error);
+        document.getElementById('recordingIndicator').style.display = 'none';
+      };
+
+      recognition.onend = function () {
+        document.getElementById('recordingIndicator').style.display = 'none';
+      };
+
+      recognition.start();
+    } else {
+      alert("Speech recognition not supported in this browser. Please use Google Chrome.");
+    }
+  }
+</script>
+{% endblock %}

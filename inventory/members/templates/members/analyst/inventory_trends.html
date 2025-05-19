@@ -1,0 +1,279 @@
+{% extends 'members/analyst/base.html' %}
+
+{% block extra_css %}
+<style>
+    .chart-container {
+        background-color: white;
+        padding: 20px;
+        border-radius: 8px;
+        box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        margin-bottom: 20px;
+        height: 400px;
+    }
+    .metric-card {
+        background-color: white;
+        padding: 15px;
+        border-radius: 8px;
+        box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        margin-bottom: 15px;
+        transition: transform 0.2s;
+    }
+    .metric-card:hover {
+        transform: translateY(-5px);
+    }
+    .metric-card h3 {
+        font-size: 1.5rem;
+        margin-bottom: 5px;
+        color: #333;
+    }
+    .metric-card p {
+        margin-bottom: 0;
+        color: #666;
+    }
+    .table-container {
+        background-color: white;
+        padding: 20px;
+        border-radius: 8px;
+        box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+</style>
+{% endblock %}
+
+{% block analyst_content %}
+<div class="container-fluid">
+    <div class="card mb-4">
+        <div class="card-body">
+            <h2 class="card-title mb-4">Inventory Trends Analysis</h2>
+            
+            <!-- Filters -->
+            <form method="get" class="row g-3 mb-4">
+                <div class="col-md-3">
+                    <label class="form-label">Time Period</label>
+                    <select class="form-select" name="period">
+                        <option value="daily" {% if selected_filters.period == 'daily' %}selected{% endif %}>Daily</option>
+                        <option value="weekly" {% if selected_filters.period == 'weekly' %}selected{% endif %}>Weekly</option>
+                        <option value="monthly" {% if selected_filters.period == 'monthly' %}selected{% endif %}>Monthly</option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">Date Range</label>
+                    <select class="form-select" name="range">
+                        <option value="7" {% if selected_filters.range == '7' %}selected{% endif %}>Last 7 Days</option>
+                        <option value="30" {% if selected_filters.range == '30' %}selected{% endif %}>Last 30 Days</option>
+                        <option value="90" {% if selected_filters.range == '90' %}selected{% endif %}>Last 90 Days</option>
+                        <option value="180" {% if selected_filters.range == '180' %}selected{% endif %}>Last 6 Months</option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">Category</label>
+                    <select class="form-select" name="category">
+                        <option value="all">All Categories</option>
+                        {% for category in categories %}
+                        <option value="{{ category }}" {% if selected_filters.category == category %}selected{% endif %}>{{ category }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">&nbsp;</label>
+                    <button type="submit" class="btn btn-primary d-block w-100">Apply Filters</button>
+                </div>
+            </form>
+
+            <!-- Metrics Cards -->
+            <div class="row mb-4">
+                <div class="col-md-3">
+                    <div class="metric-card text-center bg-primary text-white">
+                        <h3>${{ metrics.total_value|floatformat:2 }}</h3>
+                        <p>Total Inventory Value</p>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="metric-card text-center bg-success text-white">
+                        <h3>{{ metrics.stock_turnover|floatformat:1 }}</h3>
+                        <p>Stock Turnover</p>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="metric-card text-center bg-info text-white">
+                        <h3>{{ metrics.low_stock_items }}</h3>
+                        <p>Low Stock Items</p>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="metric-card text-center bg-warning text-white">
+                        <h3>{{ metrics.avg_stock_level|floatformat:1 }}</h3>
+                        <p>Average Stock Level</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Charts -->
+            <div class="row">
+                <div class="col-md-8">
+                    <div class="chart-container">
+                        <h5>Inventory Level Trend</h5>
+                        <canvas id="inventoryTrendChart"></canvas>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="chart-container">
+                        <h5>Stock Status Distribution</h5>
+                        <canvas id="stockDistributionChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Detailed Analysis Table -->
+            <div class="table-container mt-4">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h5 class="mb-0">Detailed Inventory Analysis</h5>
+                    <button class="btn btn-outline-primary" onclick="exportToCSV()">Export CSV</button>
+                </div>
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Product</th>
+                                <th>Category</th>
+                                <th>Current Stock</th>
+                                <th>Reorder Level</th>
+                                <th>Stock Value</th>
+                                <th>Turnover Rate</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for product in detailed_inventory %}
+                            <tr>
+                                <td>{{ product.product_name }}</td>
+                                <td>{{ product.category }}</td>
+                                <td>{{ product.current_stock }}</td>
+                                <td>{{ product.reorder_level }}</td>
+                                <td>${{ product.stock_value|floatformat:2 }}</td>
+                                <td>{{ product.turnover_rate|floatformat:2 }}</td>
+                                <td>
+                                    <span class="badge {% if product.status == 'Out of Stock' %}bg-danger
+                                        {% elif product.status == 'Low Stock' %}bg-warning
+                                        {% elif product.status == 'Optimal' %}bg-success
+                                        {% else %}bg-info{% endif %}">
+                                        {{ product.status }}
+                                    </span>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // const trendData = {{ trend_data|safe }};
+    // const distributionData = {{ distribution_data|safe }};
+    const trendData = JSON.parse("{{ trend_data|escapejs }}");
+    const distributionData = JSON.parse("{{ distribution_data|escapejs }}");
+
+
+    // Initialize Inventory Trend Chart
+    const trendCtx = document.getElementById('inventoryTrendChart').getContext('2d');
+    new Chart(trendCtx, {
+        type: 'line',
+        data: {
+            labels: trendData.dates,
+            datasets: [{
+                label: 'Stock Level',
+                data: trendData.stock_levels,
+                borderColor: 'rgb(75, 192, 192)',
+                backgroundColor: 'rgba(75, 192, 192, 0.1)',
+                fill: true,
+                tension: 0.4
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                title: {
+                    display: true,
+                    text: 'Inventory Level Over Time'
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    title: {
+                        display: true,
+                        text: 'Stock Level'
+                    }
+                }
+            }
+        }
+    });
+
+    // Initialize Stock Distribution Chart
+    const distributionCtx = document.getElementById('stockDistributionChart').getContext('2d');
+    new Chart(distributionCtx, {
+        type: 'doughnut',
+        data: {
+            labels: distributionData.labels,
+            datasets: [{
+                data: distributionData.values,
+                backgroundColor: [
+                    'rgba(255, 99, 132, 0.8)',
+                    'rgba(255, 206, 86, 0.8)',
+                    'rgba(75, 192, 192, 0.8)',
+                    'rgba(54, 162, 235, 0.8)'
+                ],
+                borderColor: [
+                    'rgba(255, 99, 132, 1)',
+                    'rgba(255, 206, 86, 1)',
+                    'rgba(75, 192, 192, 1)',
+                    'rgba(54, 162, 235, 1)'
+                ],
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'bottom'
+                }
+            }
+        }
+    });
+});
+
+function exportToCSV() {
+    const rows = [
+        ['Product', 'Category', 'Current Stock', 'Reorder Level', 'Stock Value', 'Turnover Rate', 'Status']
+    ];
+    
+    document.querySelectorAll('table tbody tr').forEach(row => {
+        const rowData = Array.from(row.cells).map(cell => cell.textContent.trim());
+        rows.push(rowData);
+    });
+    
+    let csvContent = "data:text/csv;charset=utf-8,";
+    rows.forEach(row => {
+        csvContent += row.join(',') + '\n';
+    });
+    
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement('a');
+    link.setAttribute('href', encodedUri);
+    link.setAttribute('download', 'inventory_analysis.csv');
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+}
+</script>
+{% endblock %} 

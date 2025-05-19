@@ -1,0 +1,271 @@
+{% extends 'members/analyst/base.html' %}
+
+{% block extra_css %}
+<style>
+    .filters-section {
+        background-color: #f8f9fa;
+        padding: 20px;
+        border-radius: 8px;
+        margin-bottom: 20px;
+    }
+    .stats-card {
+        text-align: center;
+        padding: 20px;
+        border-radius: 8px;
+        background-color: white;
+        box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        margin-bottom: 20px;
+    }
+    .stats-card h2 {
+        font-size: 2.5rem;
+        margin-bottom: 10px;
+    }
+    .stats-card p {
+        color: #666;
+        margin-bottom: 0;
+    }
+    .chart-container {
+        background-color: white;
+        padding: 20px;
+        border-radius: 8px;
+        box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        margin-bottom: 20px;
+        height: 400px;
+    }
+    .forecast-history {
+        background-color: white;
+        padding: 20px;
+        border-radius: 8px;
+        box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+    .btn-export {
+        float: right;
+        margin-bottom: 10px;
+    }
+#accuracyTrendChart {
+        width: 100%;
+        height: 100%;
+        min-height: 300px; /* Ensure the chart is visible */
+    }
+</style>
+{% endblock %}
+
+{% block analyst_content %}
+<div class="container-fluid">
+    <h1 class="mb-4">Historical Forecasts</h1>
+
+    <div class="filters-section">
+        <h5>Filters</h5>
+        <form method="get" id="filterForm">
+            <div class="row">
+                <div class="col-md-3">
+                    <div class="mb-3">
+                        <label class="form-label">Time Range</label>
+                        <select class="form-select" name="time_range">
+                            <option value="7" {% if time_range == '7' %}selected{% endif %}>Last 7 Days</option>
+                            <option value="30" {% if time_range == '30' %}selected{% endif %}>Last 30 Days</option>
+                            <option value="90" {% if time_range == '90' %}selected{% endif %}>Last 90 Days</option>
+                            <option value="all" {% if time_range == 'all' %}selected{% endif %}>All Time</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="mb-3">
+                        <label class="form-label">Category</label>
+                        <select class="form-select" name="category">
+                            <option value="all">All Categories</option>
+                            {% for cat in categories %}
+                                {% if cat %}<!-- Only display non-empty categories -->
+                                <option value="{{ cat }}" {% if category == cat %}selected{% endif %}>{{ cat }}</option>
+                                {% endif %}
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="mb-3">
+                        <label class="form-label">Accuracy</label>
+                        <select class="form-select" name="accuracy">
+                            <option value="all">All</option>
+                            <option value="high" {% if accuracy == 'high' %}selected{% endif %}>High (>90%)</option>
+                            <option value="medium" {% if accuracy == 'medium' %}selected{% endif %}>Medium (70-90%)</option>
+                            <option value="low" {% if accuracy == 'low' %}selected{% endif %}>Low (<70%)</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="mb-3">
+                        <label class="form-label">&nbsp;</label>
+                        <button type="submit" class="btn btn-primary w-100">Apply Filters</button>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <div class="row">
+        <div class="col-md-4">
+            <div class="stats-card">
+                <h2>{{ total_forecasts }}</h2>
+                <p>Total Forecasts</p>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="stats-card">
+                <h2>{{ average_accuracy }}%</h2>
+                <p>Average Accuracy</p>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="stats-card">
+                <h2>{{ most_accurate_category }}</h2>
+                <p>Most Accurate Category</p>
+                <small>{{ category_accuracy }}% accuracy</small>
+            </div>
+        </div>
+    </div>
+
+    <div class="chart-container">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h5>Forecast Accuracy Trend</h5>
+            <button class="btn btn-outline-secondary btn-sm" onclick="exportChartData()">Export Data</button>
+        </div>
+        <canvas id="accuracyTrendChart"></canvas>
+    </div>
+
+    <div class="forecast-history">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h5>Forecast History</h5>
+            <button class="btn btn-outline-secondary btn-sm" onclick="exportToCSV()">Export to CSV</button>
+        </div>
+        <div class="table-responsive">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Product</th>
+                        <th>Category</th>
+                        <th>Forecasted</th>
+                        <th>Actual</th>
+                        <th>Accuracy</th>
+                        <th>Variance</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% if forecasts %}
+                        {% for forecast in forecasts %}
+                        <tr>
+                            <td>{{ forecast.date }}</td>
+                            <td>{{ forecast.product }}</td>
+                            <td>{{ forecast.category }}</td>
+                            <td>{{ forecast.forecasted }}</td>
+                            <td>{{ forecast.actual }}</td>
+                            <td>{{ forecast.accuracy }}%</td>
+                            <td>{{ forecast.variance }}%</td>
+                            <td>
+                                <button class="btn btn-sm btn-info" onclick="viewDetails('{{ forecast.id }}')">View</button>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    {% else %}
+                        <tr>
+                            <td colspan="8" class="text-center">No forecast data available</td>
+                        </tr>
+                    {% endif %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Parse accuracy_trend_data as a JSON string
+    const accuracyData = JSON.parse('{{ accuracy_trend_data|escapejs }}');
+
+    const labels = accuracyData.dates || [];
+    const dataPoints = accuracyData.accuracies || [];
+
+    if (labels.length === 0 || dataPoints.length === 0) {
+        document.getElementById('accuracyTrendChart').style.display = 'none';
+        return;
+    }
+
+    const ctx = document.getElementById('accuracyTrendChart').getContext('2d');
+    new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: labels,
+            datasets: [{
+                label: 'Forecast Accuracy',
+                data: dataPoints,
+                borderColor: 'rgb(75, 192, 192)',
+                backgroundColor: 'rgba(75, 192, 192, 0.1)',
+                fill: true,
+                tension: 0.4
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    max: 100,
+                    title: {
+                        display: true,
+                        text: 'Accuracy (%)'
+                    }
+                },
+                x: {
+                    title: {
+                        display: true,
+                        text: 'Date'
+                    }
+                }
+            },
+            plugins: {
+                legend: {
+                    display: true,
+                    position: 'top'
+                },
+                tooltip: {
+                    mode: 'index',
+                    intersect: false
+                }
+            }
+        }
+    });
+});
+
+function viewDetails(forecastId) {
+    // Implement view details functionality
+    window.location.href = `/analyst/forecast-details/${forecastId}/`;
+}
+
+function exportChartData() {
+    // Implement chart data export
+    const accuracyData = JSON.parse("{{ accuracy_trend_data|escapejs }}");
+    const csvContent = "data:text/csv;charset=utf-8,Date,Accuracy\\n" + 
+        accuracyData.dates.map((date, i) => `${date},${accuracyData.accuracies[i]}`).join("\\n");
+    
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement("a");
+    link.setAttribute("href", encodedUri);
+    link.setAttribute("download", "forecast_accuracy_trend.csv");
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+}
+
+function exportToCSV() {
+    // Implement table export to CSV
+    window.location.href = window.location.pathname + '?export=csv';
+}
+</script>
+<canvas id="accuracyTrendChart" style="width:100%;height:400px;"></canvas>
+{% endblock %}

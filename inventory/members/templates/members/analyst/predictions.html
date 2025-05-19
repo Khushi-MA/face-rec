@@ -1,0 +1,227 @@
+{% extends 'members/analyst/base.html' %}
+
+{% block extra_css %}
+<style>
+    .prediction-form {
+        background-color: #f8f9fa;
+        padding: 20px;
+        border-radius: 8px;
+        margin-bottom: 20px;
+    }
+    .results-section {
+        margin-top: 30px;
+    }
+    .chart-container {
+        height: 400px;
+        margin-top: 20px;
+    }
+    .prediction-results {
+        display: none;  /* Hide by default */
+    }
+    .prediction-results.show {
+        display: block;  /* Show when has 'show' class */
+    }
+</style>
+{% endblock %}
+
+{% block analyst_content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Generate Predictions</h5>
+                </div>
+                <div class="card-body">
+                    <form method="post" class="prediction-form" id="predictionForm">
+                        {% csrf_token %}
+                        <div class="row">
+                            <div class="col-md-3">
+                                <div class="mb-3">
+                                    <label class="form-label">Prediction Type</label>
+                                    <select class="form-select" name="prediction_type" required>
+                                        <option value="Demand Forecast">Demand Forecast</option>
+                                        <option value="Revenue Forecast">Revenue Forecast</option>
+                                        <option value="Stock Level">Stock Level</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="mb-3">
+                                    <label class="form-label">Time Range</label>
+                                    <select class="form-select" name="time_range" required>
+                                        <option value="Next Week">Next Week</option>
+                                        <option value="Next Month">Next Month</option>
+                                        <option value="Next Quarter">Next Quarter</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="mb-3">
+                                    <label class="form-label">Category</label>
+                                    <select class="form-select" name="category" required>
+                                        <option value="All Categories">All Categories</option>
+                                        {% for category in categories %}
+                                        <option value="{{ category }}">{{ category }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="mb-3">
+                                    <label class="form-label">Confidence Level</label>
+                                    <select class="form-select" name="confidence_level" required>
+                                        <option value="95%">95%</option>
+                                        <option value="90%">90%</option>
+                                        <option value="85%">85%</option>
+                                        <option value="80%">80%</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-check mb-3">
+                                    <input type="checkbox" class="form-check-input" id="considerSeasonal" name="consider_seasonal">
+                                    <label class="form-check-label" for="considerSeasonal">Consider seasonal variations</label>
+                                </div>
+                            </div>
+                            <div class="col-md-6 text-end">
+                                <button type="submit" class="btn btn-primary">Generate Predictions</button>
+                            </div>
+                        </div>
+                    </form>
+
+                    <div class="prediction-results {% if predictions %}show{% endif %}">
+                        <h5>Prediction Results</h5>
+                        <div class="row">
+                            <div class="col-md-8">
+                                <div class="chart-container">
+                                    <canvas id="predictionsChart"></canvas>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="table-responsive">
+                                    <table class="table table-sm">
+                                        <thead>
+                                            <tr>
+                                                <th>Date</th>
+                                                <th>Quantity</th>
+                                                <th>Revenue (Rs)</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% if predictions %}
+                                                {% for prediction in predictions %}
+                                                <tr>
+                                                    <td>{{ prediction.date }}</td>
+                                                    <td>{{ prediction.predicted_quantity }}</td>
+                                                    <td>Rs{{ prediction.predicted_revenue }}</td>
+                                                </tr>
+                                                {% endfor %}
+                                            {% endif %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    {% if predictions %}
+    const predictionData = JSON.parse('{{ predictions_json|escapejs }}');
+    const predType = '{{ prediction_type }}';
+    const dates = predictionData.map(p => p.date);
+    let datasets = [];
+    let chartType = 'line'; // Always use line graph now
+    if (predType === 'Demand Forecast') {
+        datasets.push({
+            label: 'Predicted Quantity',
+            data: predictionData.map(p => parseFloat(p.predicted_quantity)),
+            borderColor: 'rgb(54, 162, 235)',
+            backgroundColor: 'rgba(54, 162, 235, 0.1)',
+            yAxisID: 'y',
+            fill: true
+        });
+    } else if (predType === 'Revenue Forecast') {
+        // Use line graph instead of bar graph for revenue forecast
+        datasets.push({
+            label: 'Predicted Revenue (Rs)',
+            data: predictionData.map(p => parseFloat(p.predicted_revenue)),
+            borderColor: 'rgb(75, 192, 192)',
+            backgroundColor: 'rgba(75, 192, 192, 0.1)',
+            yAxisID: 'y1',
+            fill: true
+        });
+    } else {
+        // For other types, show both as line graphs
+        datasets.push({
+            label: 'Predicted Quantity',
+            data: predictionData.map(p => parseFloat(p.predicted_quantity)),
+            borderColor: 'rgb(54, 162, 235)',
+            backgroundColor: 'rgba(54, 162, 235, 0.1)',
+            yAxisID: 'y',
+            fill: true
+        },{
+            label: 'Predicted Revenue (Rs)',
+            data: predictionData.map(p => parseFloat(p.predicted_revenue)),
+            borderColor: 'rgb(75, 192, 192)',
+            backgroundColor: 'rgba(75, 192, 192, 0.1)',
+            yAxisID: 'y1',
+            fill: true
+        });
+    }
+    const ctx = document.getElementById('predictionsChart').getContext('2d');
+    new Chart(ctx, {
+        type: chartType,
+        data: {
+            labels: dates,
+            datasets: datasets
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            interaction: {
+                mode: 'index',
+                intersect: false
+            },
+            scales: {
+                y: {
+                    type: 'linear',
+                    display: true,
+                    position: 'left',
+                    title: {
+                        display: true,
+                        text: predType === 'Demand Forecast' ? 'Quantity' : ''
+                    }
+                },
+                y1: {
+                    type: 'linear',
+                    display: predType === 'Revenue Forecast',
+                    position: 'right',
+                    title: {
+                        display: predType === 'Revenue Forecast',
+                        text: predType === 'Revenue Forecast' ? 'Revenue (Rs)' : ''
+                    },
+                    grid: {
+                        drawOnChartArea: false
+                    }
+                }
+            }
+        }
+    });
+    {% endif %}
+});
+</script>
+{% endblock %}
+
