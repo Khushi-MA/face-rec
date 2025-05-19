@@ -1,7 +1,4 @@
-cervical_cancer\Cervical_Cancel.v2i.coco.zip
-cervical_cancer/Cervical_Cancel.v2i.coco.zip
-*.vscode/
+DUMPS/Cervical_Cancel.v2i.coco.zip
 .vscode/
-*.pyc
 __pycache__/
-*.zip
+*.pyc
